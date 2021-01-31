@@ -1,0 +1,61 @@
+function [beta] = GD(E, beta, eps)
+% Gradient Descent
+% Inputs:
+%   E:    Error function
+%         E(beta) returns [v, g], where v is the value
+%         and g is the gradient
+%
+%   beta: Initial weights
+%
+%   eps:  Stopping criteria, it indicates that when the norm
+%         of the gradient is equal to 'eps' then we assume it's 0
+%         or equally that we are at a minima.
+%
+% Outputs:
+%   beta: Final weights
+
+global h
+global n
+global m
+global N
+global T
+global W
+global X
+global b
+global f
+global eta
+
+[v, g] = E(beta);
+
+    function [elm_out] = out(x)
+        elm_out = beta' * f(W * x + b);
+    end
+
+iter = 0;
+v
+while (norm(g) > eps)
+    % Compute the summation
+    r = zeros(h, m);
+    
+    for i = 1:N
+       for j = 1:h
+           x_i = X(:, i);
+           t_i = T(:, i);
+           w_j = W(j, :); % row vector of 1x2
+           
+           % r(j, :) = row vector of 1x2
+           
+           diff = out(x_i) - t_i; % 2x1
+           hidden_out = f(w_j * x_i + b(j)); % 1x1
+           r(j, :) = r(j, :) + (hidden_out * diff)';
+       end
+    end
+    
+    % Update beta
+    delta_beta = -eta * 2/N * r;
+    beta = beta + delta_beta;
+    [v, g] = E(beta);
+    iter = iter + 1;
+end
+iter, v
+end
