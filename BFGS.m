@@ -13,22 +13,22 @@ global m  % output dimension
 iter = 0;
 k = 0;
 [v, g] = E(beta);
-g = reshape(g, [h*m,1]);
+g = g(:);
 
 while (norm(g) > eps)
     % Compute direction
     p = -B * g;
 
     % Compute step size
-    gp = g' * p;
+    phid0 = g' * p;
     p = reshape(p, [h,m]);
-    a = BacktrackingLS(1, 0.9, 1e-4, beta, p, E, v, gp);
+    %[a, v_new, g_new] = BacktrackingLS(1, 0.9, 1e-4, beta, p, E, v, phid0);
+    [a, v_new, g_new] = ArmijoWolfeLS(1, 0.9, 1e-4, 0.9, beta, p, E, v, phid0);
 
     beta_new = beta + a * p;
 
-    [v_new, g_new] = E(beta_new);
-    g_new = reshape(g_new, [h*m,1]);
-    s = beta_new - beta; s = reshape(s, [h*m,1]);
+    g_new = g_new(:);
+    s = beta_new - beta; s = s(:);
     y = g_new - g;
     rho = y' * s;
 
@@ -53,7 +53,7 @@ end
 end
 
 
-function a = BacktrackingLS(a, tau, c1, beta, p, E, phi0, gp)
+function [a, phi, g] = BacktrackingLS(a, tau, c1, beta, p, E, phi0, phid0)
 % Perform backtracking line search to find step size
 % that satisifes Armijo condition
 %
@@ -65,14 +65,80 @@ function a = BacktrackingLS(a, tau, c1, beta, p, E, phi0, gp)
 %   p    : direction, size = (h, m)
 %   E    : objective function
 %   phi0 : a scalar, which is E(\beta)
-%   gp   : a scalar, which is \nabla E(\beta) * p
+%   phid0: a scalar, which is \nabla E(\beta) * p
+%
+% Output:
+%   a    : optimal step size
+%   phi  : value of objective function at new beta, E(beta + a * p)
+%   g    : gradient at new beta, \nabla E(beta + a * p)
 
 while true
-    [phi, ~] = E(beta + a * p);
-    if ( phi <= phi0 + c1 * a * gp )
+    [phi, g] = E(beta + a * p);
+    if ( phi <= phi0 + c1 * a * phid0 )
         break;
     end
     a = a * tau; 
+end
+
+end
+
+
+function [a, phi, g] = ArmijoWolfeLS(a, tau, c1, c2, beta, p, E, phi0, phid0)
+% Perform line search to find step size
+% that satisifes Armijo-Wolfe condition
+%
+% Input:
+%   a    : initial step size, must be 1 for quasi-Newton
+%   tau  : float in (0,1)
+%   c1   : float in (0,1)
+%   c2   : float in (0,1), c1 < c2
+%   beta : current position, size = (h, m)
+%   p    : direction, size = (h, m)
+%   E    : objective function
+%   phi0 : a scalar, which is E(\beta)
+%   phid0: a scalar, which is \nabla E(\beta) * p
+%
+% Output:
+%   a    : optimal step size
+%   phi  : value of objective function at new beta, E(beta + a * p)
+%   g    : gradient at new beta, \nabla E(beta + a * p)
+
+p_vec = p(:); % reshape matrix p as a vector
+
+while true
+    [phi, g] = E(beta + a * p);
+    g = g(:);
+    phid = g' * p_vec;
+    if (phi <= phi0 + c1 * a * phid0) && (abs(phid) <= c2 * abs(phid0))
+        return;
+    end
+    if (phid >= 0)
+        break;
+    end
+    a = a / tau; 
+end
+
+a_min = 0;
+a_max = a;
+phid_min = phid0;
+phid_max = phid;
+
+while (a_max > a_min) && (phid > 1e-12)
+    a = (a_min * phid_max - a_max * phid_min) / (phid_max - phid_min);
+    a = max(a_min + 0.01 * (a_max - a_min), min(a_max - 0.01 * (a_max - a_min), a));
+    [phi, g] = E(beta + a * p);
+    g = g(:);
+    phid = g' * p_vec;
+    if (phi <= phi0 + c1 * a * phid0) && (abs(phid) <= c2 * abs(phid0))
+        return;
+    end
+    if (phid < 0)
+        a_min = a;
+        phid_min = phid;
+    else
+        a_max = a;
+        phid_max = phid;
+    end
 end
 
 end
