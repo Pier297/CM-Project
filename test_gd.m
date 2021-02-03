@@ -11,8 +11,7 @@ global N
 
 X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
 T = [2,5 ; 4,6 ; 6,8];        % target
-h = 4;                        % number of hidden units
-%lambda = 0.001;               % regularization parameter
+h = 4;                        % number of hidden units          
 f = @tanh;                    % hidden activation function
 eps = 1e-2;
 
@@ -26,7 +25,7 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-lambda = 0.0;
+lambda = 0.00001; % regularization parameter
 
 %hessian = zeros();
 

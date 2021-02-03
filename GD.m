@@ -1,5 +1,5 @@
 function [beta] = GD(E, beta, eps)
-% Gradient Descent
+% Gradient Descent with L2 regularization
 % Inputs:
 %   E:    Error function
 %         E(beta) returns [v, g], where v is the value
@@ -24,6 +24,8 @@ global X
 global b
 global f
 global eta
+global lambda
+
 
 [v, g] = E(beta);
 
@@ -52,7 +54,7 @@ while (norm(g) > eps)
     end
     
     % Update beta
-    delta_beta = -eta * 2/N * r;
+    delta_beta = (-eta * 2/N * r) - (2*lambda/N * beta);
     beta = beta + delta_beta;
     [v, g] = E(beta);
     iter = iter + 1;
