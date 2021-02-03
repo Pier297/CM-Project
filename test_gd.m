@@ -13,7 +13,7 @@ X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
 T = [2,5 ; 4,6 ; 6,8];        % target
 h = 4;                        % number of hidden units          
 f = @tanh;                    % hidden activation function
-eps = 1e-2;
+eps = 1e-3;
 
 n = size(X,2);          % input dimension
 m = size(T,2);          % output dimension
@@ -25,11 +25,21 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-lambda = 0.00001; % regularization parameter
+lambda = 0.00000; % regularization parameter
 
-%hessian = zeros();
+% Compute hessian
+hessian = 0;
+for i = 1:N
+    x = X(:,i);
+    t = T(:,i);
+    hidden_out = f(W * x + b);
+    hessian = hessian + (hidden_out * hidden_out');
+end
 
-%eta = 1/norm(hessian);
-eta = 0.1;
+hessian = 2/N * hessian + 2*lambda/N;
+
+eta = 1/norm(hessian)
+
+%eta = 0.1;
 
 beta = GD(@ObjectiveFunc, beta, eps);
