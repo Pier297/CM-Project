@@ -34,6 +34,7 @@ global lambda
     end
 
 iter = 0;
+errors = [v];
 v
 while (norm(g) > eps)
     % Compute the summation
@@ -57,7 +58,9 @@ while (norm(g) > eps)
     delta_beta = (-eta * 2/N * r) - (2*lambda/N * beta);
     beta = beta + delta_beta;
     [v, g] = E(beta);
+    errors = [errors, v];
     iter = iter + 1;
 end
+plot(1:iter+1, errors)
 iter, v
 end
