@@ -49,7 +49,7 @@ while (norm(g) > eps)
     v = v_new;
     g = g_new;
 end
-
+iter
 end
 
 

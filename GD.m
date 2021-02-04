@@ -58,9 +58,19 @@ while (norm(g) > eps)
     delta_beta = (-eta * 2/N * r) - (2*lambda/N * beta);
     beta = beta + delta_beta;
     [v, g] = E(beta);
+    v;
     errors = [errors, v];
     iter = iter + 1;
 end
-plot(1:iter+1, errors)
+scatter(1:iter+1, errors)
 iter, v
+all_decreasing = true;
+% Test all decreasing errors
+for i = 1:iter
+    if errors(i) < errors(i+1)
+        all_decreasing = false;
+        break;
+    end
+end
+all_decreasing
 end

@@ -7,7 +7,7 @@
 clf
 x = zeros(100, 1);
 t = zeros(100, 1);
-c = 1
+c = 1;
 for i = 0:0.1:10
     x(c) = i;
     t(c) = sin(i);
