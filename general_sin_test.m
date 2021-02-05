@@ -10,9 +10,6 @@ global b
 global m
 global N
 
-
-%X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
-%T = [2,5 ; 4,6 ; 6,8];        % target
 X = zeros(100, 1);
 T = zeros(100, 1);
 c = 1;
@@ -23,7 +20,7 @@ for i = 0:0.1:10
 end
 
 f = @tanh;                    % hidden activation function
-eps = 1e-1;
+eps = 1e-4;
 
 n = size(X,2);          % input dimension
 m = size(T,2);          % output dimension
@@ -38,7 +35,7 @@ beta = randn(h,m);      % randomly initialized beta
 
 lambda = 0.000001; % regularization parameter
 
-alpha_t_minus_1 = 0.0001; % momentum constant
+alpha_t_minus_1 = 0.001; % momentum constant
 
 % Compute hessian
 hessian = 0;
@@ -53,5 +50,7 @@ hessian = 2/N * (hessian + lambda);
 
 eta = 1/norm(hessian);
 
-beta = NAG(@ObjectiveFunc, beta, eps);
- 
+beta_nag = NAG(@ObjectiveFunc, beta, eps);
+
+B = eye(h*m);
+beta_bfgs = BFGS(@ObjectiveFunc, beta, B, eps);

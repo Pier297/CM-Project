@@ -59,14 +59,20 @@ while norm(gr) > eps
     delta_beta_t_minus_1 = delta_beta_t;
     
     [v,gr] = E(beta);
-    fprintf('%d\t%d\n', v, norm(gr));
+    %fprintf('%d\t%d\n', v, norm(gr));
     errors = [errors, v];
     iter = iter + 1;
 end
 
+fprintf('\n### NAG ###\n')
+fprintf('\n# iterations = %d\n\nFinal error = %d\n\n', iter, v);
+
 figure
 scatter(1:iter+1, errors)
-iter, v
+title('NAG | Error function')
+xlabel('iteration')
+ylabel('Error')
+
 all_decreasing = true;
 % Test all decreasing errors
 for i = 1:iter
@@ -75,11 +81,19 @@ for i = 1:iter
         break;
     end
 end
-all_decreasing
+
+if all_decreasing
+    fprintf('The errors were all decreasing.\n\n')
+else
+    fprintf('The errors were *NOT* all decreasing.\n')
+end
 
 figure
 % plot training data
 scatter(X, T)
+title('NAG | training data vs model prediction')
+xlabel('x')
+ylabel('sin(x)')
 c = 1;
 for i = 0:0.1:10
     X(c) = i;
@@ -92,4 +106,5 @@ for i = 1:N
    Y = [Y, out(X(:, i))]; 
 end
 plot(X, Y)
+legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
 end

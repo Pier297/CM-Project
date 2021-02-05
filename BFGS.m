@@ -9,11 +9,23 @@ function [beta] = BFGS(E, beta, B, eps)
 
 global h  % number of hidden units
 global m  % output dimension
+% needed for plots
+global X
+global T
+global N
+global W
+global b
+global f
 
 iter = 0;
 k = 0;
 [v, g] = E(beta);
+errors = [v];
 g = g(:);
+
+    function [elm_out] = out(x)
+        elm_out = beta' * f(W * x + b);
+    end
 
 while (norm(g) > eps)
     % Compute direction
@@ -48,8 +60,49 @@ while (norm(g) > eps)
     beta = beta_new;
     v = v_new;
     g = g_new;
+    errors = [errors, v];
 end
-iter
+fprintf('\n### BFGS ###\n')
+fprintf('\n# iterations = %d\n\nFinal error = %d\n\n', iter, v);
+% Plot
+figure
+scatter(1:iter+1, errors)
+title('BFGS | Error function')
+xlabel('iteration')
+ylabel('Error')
+all_decreasing = true;
+% Test all decreasing errors
+for i = 1:iter
+    if errors(i) < errors(i+1)
+        all_decreasing = false;
+        break;
+    end
+end
+if all_decreasing
+    fprintf('The errors were all decreasing.\n\n')
+else
+    fprintf('The errors were *NOT* all decreasing.\n')
+end
+
+figure
+% plot training data
+scatter(X, T)
+title('BFGS | training data vs model prediction')
+xlabel('x')
+ylabel('sin(x)')
+c = 1;
+for i = 0:0.1:10
+    X(c) = i;
+    T(c) = sin(i);
+    c = c + 1;
+end
+hold on
+Y = [];
+for i = 1:N
+   Y = [Y, out(X(:, i))]; 
+end
+plot(X, Y)
+legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
 end
 
 
