@@ -64,6 +64,7 @@ while norm(gr) > eps
     iter = iter + 1;
 end
 
+figure
 scatter(1:iter+1, errors)
 iter, v
 all_decreasing = true;
@@ -76,4 +77,19 @@ for i = 1:iter
 end
 all_decreasing
 
+figure
+% plot training data
+scatter(X, T)
+c = 1;
+for i = 0:0.1:10
+    X(c) = i;
+    T(c) = sin(i);
+    c = c + 1;
+end
+hold on
+Y = [];
+for i = 1:N
+   Y = [Y, out(X(:, i))]; 
+end
+plot(X, Y)
 end

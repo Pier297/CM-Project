@@ -35,9 +35,9 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-lambda = 0.00001; % regularization parameter
+lambda = 0.000001; % regularization parameter
 
-alpha_t_minus_1 = 0.0005; % momentum constant
+alpha_t_minus_1 = 0.0001; % momentum constant
 
 % Compute hessian
 hessian = 0;
