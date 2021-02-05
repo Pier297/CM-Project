@@ -50,7 +50,7 @@ while norm(gr) > eps
 
     [~, g] = E(beta + alpha_t_minus_1 * delta_beta_t_minus_1);
 
-    delta_beta_t = alpha_t_minus_1 * delta_beta_t_minus_1 - eta * g;
+    delta_beta_t = alpha_t_minus_1 * delta_beta_t_minus_1 - eta * g - 2*lambda/N * beta;
 
     beta = beta + delta_beta_t;
 
@@ -59,6 +59,7 @@ while norm(gr) > eps
     delta_beta_t_minus_1 = delta_beta_t;
     
     [v,gr] = E(beta);
+    fprintf('%d\t%d\n', v, norm(gr));
     errors = [errors, v];
     iter = iter + 1;
 end

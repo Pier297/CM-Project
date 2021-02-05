@@ -22,7 +22,7 @@ for i = 0:0.1:10
 end
 
 f = @tanh;                    % hidden activation function
-eps = 1e-1;
+eps = 1e-3;
 
 n = size(X,2);          % input dimension
 m = size(T,2);          % output dimension
@@ -35,9 +35,9 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-lambda = 0.0; % regularization parameter
+lambda = 0.00001; % regularization parameter
 
-alpha_t_minus_1 = 0.005; % momentum constant
+alpha_t_minus_1 = 0.0005; % momentum constant
 
 % Compute hessian
 hessian = 0;
@@ -48,10 +48,8 @@ for i = 1:N
     hessian = hessian + (hidden_out * hidden_out');
 end
 
-hessian = 2/N * hessian + 2*lambda/N;
+hessian = 2/N * (hessian + lambda);
 
 eta = 1/norm(hessian);
-
-%eta = 0.1;
 
 beta = NAG(@ObjectiveFunc, beta, eps);
