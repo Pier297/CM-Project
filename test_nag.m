@@ -1,14 +1,3 @@
-global X
-global T
-global h
-global eta
-global lambda
-global alpha_t_minus_1
-global f
-global W
-global b
-global m
-global N
 
 
 %X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
@@ -36,9 +25,7 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-lambda = 0.000001; % regularization parameter
-
-alpha_t_minus_1 = 0.0001; % momentum constant
+[alpha_t_minus_1, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f);
 
 % Compute hessian
 hessian = 0;
@@ -53,5 +40,39 @@ hessian = 2/N * (hessian + lambda);
 
 eta = 1/norm(hessian);
 
-beta = NAG(@ObjectiveFunc, beta, eps);
- 
+%beta = NAG(@ObjectiveFunc, beta, eps);
+[beta_nag, errors] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, alpha_t_minus_1, N, X, T, W, b, f);
+
+ % Plot the stats
+figure
+scatter(1:(length(errors)), errors)
+title('NAG | Error function')
+xlabel('iteration')
+ylabel('Error')
+
+figure
+% plot training data
+scatter(X, T)
+title('NAG | training data vs model prediction')
+xlabel('x')
+ylabel('sin(x)')
+c = 1;
+for i = 0:0.1:10
+    X(c) = i;
+    T(c) = sin(i);
+    c = c + 1;
+end
+hold on
+Y = [];
+for i = 1:N
+   Y = [Y, out(f, W, b, beta_nag, X(:, i))]; 
+end
+plot(X, Y)
+legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
+
+%B = eye(h*m);
+%beta_bfgs = BFGS(@ObjectiveFunc, beta, B, eps);
+
+    function [elm_out] = out(f, W, b, beta_nag, x)
+        elm_out = beta_nag' * f(W * x + b);
+    end

@@ -1,15 +1,7 @@
-global X
-global T
-global h
-global eta
-global lambda
-global alpha_t_minus_1
-global f
-global W
-global b
-global m
-global N
 
+
+%X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
+%T = [2,5 ; 4,6 ; 6,8];        % target
 X = zeros(100, 1);
 T = zeros(100, 1);
 c = 1;
@@ -33,9 +25,11 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-lambda = 0.000001; % regularization parameter
+[alpha_t_minus_1, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f);
 
-alpha_t_minus_1 = 0.001; % momentum constant
+fprintf('\n### NAG ###\n')
+
+fprintf('Finish grid search, found:\n alpha = %d\n lambda=%d\n', alpha_t_minus_1, lambda)
 
 % Compute hessian
 hessian = 0;
@@ -50,7 +44,78 @@ hessian = 2/N * (hessian + lambda);
 
 eta = 1/norm(hessian);
 
-beta_nag = NAG(@ObjectiveFunc, beta, eps);
+[beta_nag, errors] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, alpha_t_minus_1, N, X, T, W, b, f);
+
+
+fprintf('%d iterations\n', length(errors))
+fprintf('Final error = %d\n', errors(length(errors)))
+
+all_decreasing = true;
+for i = 1:(length(errors)-1)
+    if errors(i) < errors(i+1)
+        all_decreasing = false;
+        break;
+    end
+end
+if all_decreasing
+    fprintf('The errors were all decreasing.\n\n')
+else
+    fprintf('The errors were *NOT* all decreasing.\n')
+end
+
+ % Plot the stats
+figure
+scatter(1:(length(errors)), errors)
+title('NAG | Error function')
+xlabel('iteration')
+ylabel('Error')
+
+figure
+% plot training data
+scatter(X, T)
+title('NAG | training data vs model prediction')
+xlabel('x')
+ylabel('sin(x)')
+c = 1;
+for i = 0:0.1:10
+    X(c) = i;
+    T(c) = sin(i);
+    c = c + 1;
+end
+hold on
+Y = [];
+for i = 1:N
+   Y = [Y, out(f, W, b, beta_nag, X(:, i))]; 
+end
+plot(X, Y)
+legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
+
+% ------- BFGS ------
 
 B = eye(h*m);
-beta_bfgs = BFGS(@ObjectiveFunc, beta, B, eps);
+[beta_bfgs, errors_bfgs] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N);
+
+figure
+% plot training data
+scatter(X, T)
+title('BFGS | training data vs model prediction')
+xlabel('x')
+ylabel('sin(x)')
+c = 1;
+for i = 0:0.1:10
+    X(c) = i;
+    T(c) = sin(i);
+    c = c + 1;
+end
+hold on
+Y = [];
+for i = 1:N
+   Y = [Y, out(f, W, b, beta_bfgs, X(:, i))]; 
+end
+plot(X, Y)
+legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
+
+
+    function [elm_out] = out(f, W, b, beta, x)
+        elm_out = beta' * f(W * x + b);
+    end

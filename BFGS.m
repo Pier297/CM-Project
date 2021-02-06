@@ -1,4 +1,4 @@
-function [beta] = BFGS(E, beta, B, eps)
+function [beta, errors] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N)
 % BFGS
 %
 % Input:
@@ -7,25 +7,11 @@ function [beta] = BFGS(E, beta, B, eps)
 %   B    : initial approximation of inverse Hessian, size = (h*m, h*m)
 %   eps  : accuracy for stopping criterion
 
-global h  % number of hidden units
-global m  % output dimension
-% needed for plots
-global X
-global T
-global N
-global W
-global b
-global f
-
 iter = 0;
 k = 0;
-[v, g] = E(beta);
+[v, g] = E(beta, X, T, W, b, N, f, lambda);
 errors = [v];
 g = g(:);
-
-    function [elm_out] = out(x)
-        elm_out = beta' * f(W * x + b);
-    end
 
 while (norm(g) > eps)
     % Compute direction
@@ -35,7 +21,7 @@ while (norm(g) > eps)
     phid0 = g' * p;
     p = reshape(p, [h,m]);
     %[a, v_new, g_new] = BacktrackingLS(1, 0.9, 1e-4, beta, p, E, v, phid0);
-    [a, v_new, g_new] = ArmijoWolfeLS(1, 0.9, 1e-4, 0.9, beta, p, E, v, phid0);
+    [a, v_new, g_new] = ArmijoWolfeLS(1, 0.9, 1e-4, 0.9, beta, p, E, v, phid0, X, T, W, b, N, f, lambda);
 
     beta_new = beta + a * p;
 
@@ -83,26 +69,6 @@ if all_decreasing
 else
     fprintf('The errors were *NOT* all decreasing.\n')
 end
-
-figure
-% plot training data
-scatter(X, T)
-title('BFGS | training data vs model prediction')
-xlabel('x')
-ylabel('sin(x)')
-c = 1;
-for i = 0:0.1:10
-    X(c) = i;
-    T(c) = sin(i);
-    c = c + 1;
-end
-hold on
-Y = [];
-for i = 1:N
-   Y = [Y, out(X(:, i))]; 
-end
-plot(X, Y)
-legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
 end
 
 
@@ -136,7 +102,7 @@ end
 end
 
 
-function [a, phi, g] = ArmijoWolfeLS(a, tau, c1, c2, beta, p, E, phi0, phid0)
+function [a, phi, g] = ArmijoWolfeLS(a, tau, c1, c2, beta, p, E, phi0, phid0, X, T, W, b, N, f, lambda)
 % Perform line search to find step size
 % that satisifes Armijo-Wolfe condition
 %
@@ -159,7 +125,7 @@ function [a, phi, g] = ArmijoWolfeLS(a, tau, c1, c2, beta, p, E, phi0, phid0)
 p_vec = p(:); % reshape matrix p as a vector
 
 while true
-    [phi, g] = E(beta + a * p);
+    [phi, g] = E(beta + a * p, X, T, W, b, N, f, lambda);
     g = g(:);
     phid = g' * p_vec;
     if (phi <= phi0 + c1 * a * phid0) && (abs(phid) <= c2 * abs(phid0))
@@ -179,7 +145,7 @@ phid_max = phid;
 while (a_max > a_min) && (phid > 1e-12)
     a = (a_min * phid_max - a_max * phid_min) / (phid_max - phid_min);
     a = max(a_min + 0.01 * (a_max - a_min), min(a_max - 0.01 * (a_max - a_min), a));
-    [phi, g] = E(beta + a * p);
+    [phi, g] = E(beta + a * p, X, T, W, b, N, f, lambda);
     g = g(:);
     phid = g' * p_vec;
     if (phi <= phi0 + c1 * a * phid0) && (abs(phid) <= c2 * abs(phid0))

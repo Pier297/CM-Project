@@ -1,17 +1,9 @@
-function [v, g] = ObjectiveFunc(beta)
+function [v, g] = ObjectiveFunc(beta, X, T, W, b, N, f, lambda)
 % Mean-Squared Error with L2 regularization
 %
 % Output:
 %   v = E(\beta)
 %   g = \nabla E(\beta)
-
-global X
-global T
-global W
-global b
-global N
-global f
-global lambda
 
 mse = 0;
 nabla = 0;
