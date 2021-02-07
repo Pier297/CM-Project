@@ -22,31 +22,13 @@ W = randn(h,n);         % weight between input and hidden layer
 b = randn(h,1);         % bias of hidden nodes
 X = X';                 % transpose to make it easier
 T = T';                 % transpose to make it easier
+% lambda = 0.0001
 
 beta = randn(h,m);      % randomly initialized beta
 
-[alpha_t_minus_1, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f);
+[beta_nag, errors, alpha, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta);
 
 fprintf('\n### NAG ###\n')
-
-fprintf('Finish grid search, found:\n alpha = %d\n lambda=%d\n', alpha_t_minus_1, lambda)
-
-% Compute hessian
-hessian = 0;
-for i = 1:N
-    x = X(:,i);
-    t = T(:,i);
-    hidden_out = f(W * x + b);
-    hessian = hessian + (hidden_out * hidden_out');
-end
-
-hessian = 2/N * (hessian + lambda);
-
-eta = 1/norm(hessian);
-
-[beta_nag, errors] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, alpha_t_minus_1, N, X, T, W, b, f);
-
-
 fprintf('%d iterations\n', length(errors))
 fprintf('Final error = %d\n', errors(length(errors)))
 

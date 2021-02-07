@@ -26,7 +26,7 @@ delta_beta_t_minus_1 = 0;
 errors = [v];
 iter = 0;
 
-MAX_ITER = 10000;
+MAX_ITER = 2000;
 
 while iter < MAX_ITER && norm(gr) > eps
     a_t_plus_1 = update_a(a_t);
@@ -34,7 +34,7 @@ while iter < MAX_ITER && norm(gr) > eps
 
     [~, g] = E(beta + alpha_t_minus_1 * delta_beta_t_minus_1, X, T, W, b, N, f, lambda);
 
-    delta_beta_t = alpha_t_minus_1 * delta_beta_t_minus_1 - eta * g - 2*lambda/N * beta;
+    delta_beta_t = alpha_t_minus_1 * delta_beta_t_minus_1 - eta * g; %- (2*lambda/N * beta);
 
     beta = beta + delta_beta_t;
 

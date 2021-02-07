@@ -25,7 +25,7 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-[alpha_t_minus_1, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f);
+[alpha_t_minus_1, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps);
 
 % Compute hessian
 hessian = 0;
