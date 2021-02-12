@@ -1,4 +1,4 @@
-function [beta, errors] = NAG(E, beta, eps, eta, lambda, alpha_t_minus_1, N, X, T, W, b, f)
+function [beta, errors] = NAG(E, beta, eps, eta, lambda, alpha_t_minus_1, N, X, T, W, b, f, print_stat, MAX_ITER)
 % Nesterov' Accelerated Gradient Descent with L2 regularization
 % Inputs:
 %   E:    Error function
@@ -26,8 +26,7 @@ delta_beta_t_minus_1 = 0;
 errors = [v];
 iter = 0;
 
-MAX_ITER = 2000;
-
+tStart = tic;
 while iter < MAX_ITER && norm(gr) > eps
     a_t_plus_1 = update_a(a_t);
     alpha_t = (a_t - 1)/a_t_plus_1;
@@ -46,6 +45,26 @@ while iter < MAX_ITER && norm(gr) > eps
 
     errors = [errors, v];
     iter = iter + 1;
+end
+tEnd = toc(tStart);
+
+if print_stat
+    fprintf('\n### NAG ###\n')
+    fprintf('# iterations = %d\nFinal error = %d\nElapsed time = %d\n', iter, v, tEnd);
+    
+    % Test all decreasing errors
+    all_decreasing = true;
+    for i = 1:iter
+        if errors(i) < errors(i+1)
+            all_decreasing = false;
+            break;
+        end
+    end
+    if all_decreasing
+        fprintf('The errors were all decreasing.\n')
+    else
+        fprintf('The errors were *NOT* all decreasing.\n')
+    end
 end
 
 end

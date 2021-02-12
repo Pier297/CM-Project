@@ -75,7 +75,7 @@ legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
 % ------- BFGS ------
 
 B = eye(h*m);
-[beta_bfgs, errors_bfgs] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N);
+[beta_bfgs, errors_bfgs] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS');
 
 figure
 % plot training data

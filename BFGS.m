@@ -1,4 +1,4 @@
-function [beta, errors] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N)
+function [beta, errors] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N, line_search)
 % BFGS
 %
 % Input:
@@ -13,6 +13,7 @@ k = 0;
 errors = [v];
 g = g(:);
 
+tStart = tic;
 while (norm(g) > eps)
     % Compute direction
     p = -B * g;
@@ -20,8 +21,11 @@ while (norm(g) > eps)
     % Compute step size
     phid0 = g' * p;
     p = reshape(p, [h,m]);
-    %[a, v_new, g_new] = BacktrackingLS(1, 0.9, 1e-4, beta, p, E, v, phid0);
-    [a, v_new, g_new] = ArmijoWolfeLS(1, 0.9, 1e-4, 0.9, beta, p, E, v, phid0, X, T, W, b, N, f, lambda);
+    if strcmp(line_search, 'BLS')
+        [a, v_new, g_new] = BacktrackingLS(1, 0.9, 1e-4, beta, p, E, v, phid0, X, T, W, b, N, f, lambda);
+    else
+        [a, v_new, g_new] = ArmijoWolfeLS(1, 0.9, 1e-4, 0.9, beta, p, E, v, phid0, X, T, W, b, N, f, lambda);
+    end
 
     beta_new = beta + a * p;
 
@@ -48,8 +52,11 @@ while (norm(g) > eps)
     g = g_new;
     errors = [errors, v];
 end
-fprintf('\n### BFGS ###\n')
-fprintf('\n# iterations = %d\n\nFinal error = %d\n\n', iter, v);
+tEnd = toc(tStart);
+
+fprintf('\n### BFGS (%s) ###\n', line_search)
+fprintf('# iterations = %d\nFinal error = %d\nElapsed time = %d\n', iter, v, tEnd);
+
 % Plot
 figure
 scatter(1:iter+1, errors)
@@ -57,6 +64,7 @@ title('BFGS | Error function')
 xlabel('iteration')
 ylabel('Error')
 all_decreasing = true;
+
 % Test all decreasing errors
 for i = 1:iter
     if errors(i) < errors(i+1)
@@ -65,14 +73,15 @@ for i = 1:iter
     end
 end
 if all_decreasing
-    fprintf('The errors were all decreasing.\n\n')
+    fprintf('The errors were all decreasing.\n')
 else
     fprintf('The errors were *NOT* all decreasing.\n')
 end
+
 end
 
 
-function [a, phi, g] = BacktrackingLS(a, tau, c1, beta, p, E, phi0, phid0)
+function [a, phi, g] = BacktrackingLS(a, tau, c1, beta, p, E, phi0, phid0, X, T, W, b, N, f, lambda)
 % Perform backtracking line search to find step size
 % that satisifes Armijo condition
 %
@@ -92,7 +101,7 @@ function [a, phi, g] = BacktrackingLS(a, tau, c1, beta, p, E, phi0, phid0)
 %   g    : gradient at new beta, \nabla E(beta + a * p)
 
 while true
-    [phi, g] = E(beta + a * p);
+    [phi, g] = E(beta + a * p, X, T, W, b, N, f, lambda);
     if ( phi <= phi0 + c1 * a * phid0 )
         break;
     end
