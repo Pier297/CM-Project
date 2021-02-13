@@ -24,6 +24,10 @@ T = T';                 % transpose to make it easier
 beta = rand(h,m)*2-1;   % randomly initialized beta, range in [-1,1]
 
 
+% ------- True Solution -------
+[beta_opt, opt_val, opt_val_grad] = true_solution(X, T, W, b, f, N, h, m, lambda);
+
+
 % ------- Normal Equation -------
 beta_neq = normal_equation(X', T', W, b, N, h, f);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_neq));
