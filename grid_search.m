@@ -1,7 +1,7 @@
 function [best_beta, best_errors, alpha, lambda] = grid_search(Optimizer, Error, X, T, f, eps, N, W, b, beta)
 
     alpha_candidates = 0:0.01:0.1;
-    lambda_candidates = 0:(0.01/100):0.001;
+    lambda_candidates = 0:(0.01/1000):0.0001;
     
     best_error = Inf;
     best_errors = [];
@@ -24,7 +24,7 @@ function [best_beta, best_errors, alpha, lambda] = grid_search(Optimizer, Error,
 
             eta = 1/norm(hessian);
 
-           [beta_nag, errs] = Optimizer(Error, beta, eps, eta, l, a, N, X, T, W, b, f, false, 2000);
+           [beta_nag, errs] = Optimizer(Error, beta, eps, eta, l, a, N, X, T, W, b, f, false, 2000, 0);
 
            [e, ~] = Error(beta_nag, X, T, W, b, N, f, l);
            

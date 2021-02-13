@@ -1,13 +1,11 @@
+rng(1);                 % seed to make random values repeatable
 
-
-%X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
-%T = [2,5 ; 4,6 ; 6,8];        % target
 X = zeros(100, 1);
 T = zeros(100, 1);
 c = 1;
 for i = 0:0.1:10
     X(c) = i;
-    T(c) = sin(i);
+    T(c) = sin(i) + (rand - 0.5)/3;
     c = c + 1;
 end
 
@@ -58,12 +56,6 @@ scatter(X, T)
 title('NAG | training data vs model prediction')
 xlabel('x')
 ylabel('sin(x)')
-c = 1;
-for i = 0:0.1:10
-    X(c) = i;
-    T(c) = sin(i);
-    c = c + 1;
-end
 hold on
 Y = [];
 for i = 1:N
@@ -83,12 +75,6 @@ scatter(X, T)
 title('BFGS | training data vs model prediction')
 xlabel('x')
 ylabel('sin(x)')
-c = 1;
-for i = 0:0.1:10
-    X(c) = i;
-    T(c) = sin(i);
-    c = c + 1;
-end
 hold on
 Y = [];
 for i = 1:N

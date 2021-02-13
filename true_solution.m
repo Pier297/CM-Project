@@ -1,5 +1,7 @@
 function [beta, v, g] = true_solution(X, T, W, b, f, N, h, m, lambda)
 
+tStart = tic;
+
 % --- compute 1st term: \sum_{i=1}^{N} f(W x_i + b) f(W x_i + b)^T + \lambda I
 first_term = zeros(h,h);
 for i = 1:N
@@ -17,6 +19,11 @@ end
 
 % --- final result
 beta = first_term \ second_term;
+
+tEnd = toc(tStart);
+
+fprintf('\n### True Solution ###\n');
+fprintf('Time elapsed = %d\n', tEnd);
 
 % --- verify
 [v, g] = ObjectiveFunc(beta, X, T, W, b, N, f, lambda);
