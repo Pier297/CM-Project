@@ -10,7 +10,7 @@ function [beta, errors] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 
 iter = 0;
 k = 0;
 [v, g] = E(beta, X, T, W, b, N, f, lambda);
-errors = [v];
+errors = (v);
 g = g(:);
 
 tStart = tic;
@@ -50,7 +50,7 @@ while (norm(g) > eps)
     beta = beta_new;
     v = v_new;
     g = g_new;
-    errors = [errors, v];
+    errors(iter+1) = v;
 end
 tEnd = toc(tStart);
 

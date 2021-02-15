@@ -23,7 +23,7 @@ delta_beta_t_minus_1 = 0;
 
 [v,gr] = E(beta, X, T, W, b, N, f, lambda);
 
-errors = [v];
+errors = (v);
 iter = 0;
 
 prevError = v;
@@ -54,8 +54,8 @@ while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && norm(gr) > eps
     
     prevError = v;
 
-    errors = [errors, v];
     iter = iter + 1;
+    errors(iter+1) = v;
 end
 tEnd = toc(tStart);
 

@@ -55,3 +55,16 @@ fprintf('MSE = %d\n', errors_bfgs_bls(length(errors_bfgs_bls)));
 B = eye(h*m);
 [beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS');
 fprintf('MSE = %d\n', errors_bfgs_awls(length(errors_bfgs_awls)));
+
+
+% ------- Plot log scale -------
+errs = errs - opt_val;
+errors_bfgs_bls = errors_bfgs_bls - opt_val;
+errors_bfgs_awls = errors_bfgs_awls - opt_val;
+
+figure
+semilogy(1:(length(errs)), errs, 1:(length(errors_bfgs_bls)), errors_bfgs_bls, 1:(length(errors_bfgs_awls)), errors_bfgs_awls)
+title('??')
+xlabel('iteration')
+ylabel('log(Error)')
+legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')

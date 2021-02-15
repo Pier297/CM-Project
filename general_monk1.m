@@ -44,7 +44,7 @@ for i = 1:N
 end
 hessian = 2/N * (hessian + lambda);
 eta = 1/norm(hessian);
-[beta_nag, errs] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, alpha, N, X, T, W, b, f, true, intmax, 0);
+[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, alpha, N, X, T, W, b, f, true, intmax, 0);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_nag));
 
 
@@ -59,6 +59,18 @@ B = eye(h*m);
 [beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS');
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_bfgs_awls));
 
+
+% ------- Plot log scale -------
+errors_nag = errors_nag - opt_val;
+errors_bfgs_bls = errors_bfgs_bls - opt_val;
+errors_bfgs_awls = errors_bfgs_awls - opt_val;
+
+figure
+semilogy(1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_bls)), errors_bfgs_bls, 1:(length(errors_bfgs_awls)), errors_bfgs_awls)
+title('??')
+xlabel('iteration')
+ylabel('log(Error)')
+legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
 
 
 
