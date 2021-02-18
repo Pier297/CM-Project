@@ -1,4 +1,4 @@
-function [beta] = GD(E, beta, eps)
+function [beta, errors] = GD(E, beta, eps, h, m, N, T, W, X, b, f, eta, lambda)
 % Gradient Descent with L2 regularization
 % Inputs:
 %   E:    Error function
@@ -14,28 +14,15 @@ function [beta] = GD(E, beta, eps)
 % Outputs:
 %   beta: Final weights
 
-global h
-global n
-global m
-global N
-global T
-global W
-global X
-global b
-global f
-global eta
-global lambda
-
-
-[v, g] = E(beta);
+[v, g] = E(beta, X, T, W, b, N, f, lambda);
 
     function [elm_out] = out(x)
         elm_out = beta' * f(W * x + b);
     end
 
 iter = 0;
-errors = [v];
-v
+errors = (v);
+
 while (norm(g) > eps)
     % Compute the summation
     r = zeros(h, m);
@@ -57,16 +44,14 @@ while (norm(g) > eps)
     % Update beta
     delta_beta = (-eta * 2/N * r) - (2*lambda/N * beta);
     beta = beta + delta_beta;
-    [v, g] = E(beta);
-    v;
-    errors = [errors, v];
+    [v, g] = E(beta, X, T, W, b, N, f, lambda);
     iter = iter + 1;
+    errors(iter) = v;
 end
-scatter(1:iter+1, errors)
-iter, v
+
 all_decreasing = true;
 % Test all decreasing errors
-for i = 1:iter
+for i = 1:iter-1
     if errors(i) < errors(i+1)
         all_decreasing = false;
         break;

@@ -58,11 +58,11 @@ fprintf('\n### BFGS (%s) ###\n', line_search)
 fprintf('# iterations = %d\nFinal error = %d\nElapsed time = %d\n', iter, v, tEnd);
 
 % Plot
-figure
-scatter(1:iter+1, errors)
-title('BFGS | Error function')
-xlabel('iteration')
-ylabel('Error')
+%figure
+%scatter(1:iter+1, errors)
+%title('BFGS | Error function')
+%xlabel('iteration')
+%ylabel('Error')
 all_decreasing = true;
 
 % Test all decreasing errors

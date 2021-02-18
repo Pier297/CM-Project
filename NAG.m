@@ -1,4 +1,4 @@
-function [beta, errors] = NAG(E, beta, eps, eta, lambda, alpha_t_minus_1, N, X, T, W, b, f, print_stat, MAX_ITER, MAX_UNLUCKY_STEPS)
+function [beta, errors] = NAG(E, beta, eps, eta, lambda, N, X, T, W, b, f, print_stat, MAX_ITER, MAX_UNLUCKY_STEPS)
 % Nesterov' Accelerated Gradient Descent with L2 regularization
 % Inputs:
 %   E:    Error function
@@ -18,7 +18,7 @@ function [beta, errors] = NAG(E, beta, eps, eta, lambda, alpha_t_minus_1, N, X, 
        a_t_plus_1 = (1 + sqrt(4 * a_t^2 + 1))/2;
     end
 
-a_t = 1;
+a_t_minus_1 = 1;
 delta_beta_t_minus_1 = 0;
 
 [v,gr] = E(beta, X, T, W, b, N, f, lambda);
@@ -31,17 +31,17 @@ unluckySteps = 0;
 
 tStart = tic;
 while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && norm(gr) > eps
-    a_t_plus_1 = update_a(a_t);
-    alpha_t = (a_t - 1)/a_t_plus_1;
+    a_t = update_a(a_t_minus_1);
+    
+    alpha_t_minus_1 = (a_t_minus_1 - 1)/a_t;
 
     [~, g] = E(beta + alpha_t_minus_1 * delta_beta_t_minus_1, X, T, W, b, N, f, lambda);
 
-    delta_beta_t = alpha_t_minus_1 * delta_beta_t_minus_1 - eta * g; %- (2*lambda/N * beta);
+    delta_beta_t = alpha_t_minus_1 * delta_beta_t_minus_1 - eta * g;
 
     beta = beta + delta_beta_t;
-
-    a_t = a_t_plus_1;
-    alpha_t_minus_1 = alpha_t;
+    
+    a_t_minus_1 = a_t;
     delta_beta_t_minus_1 = delta_beta_t;
     
     [v,gr] = E(beta, X, T, W, b, N, f, lambda);
@@ -55,7 +55,7 @@ while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && norm(gr) > eps
     prevError = v;
 
     iter = iter + 1;
-    errors(iter+1) = v;
+    errors(iter) = v;
 end
 tEnd = toc(tStart);
 
@@ -65,7 +65,7 @@ if print_stat
     
     % Test all decreasing errors
     all_decreasing = true;
-    for i = 1:iter
+    for i = 1:iter-1
         if errors(i) < errors(i+1)
             all_decreasing = false;
             break;

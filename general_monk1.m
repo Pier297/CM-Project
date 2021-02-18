@@ -2,9 +2,7 @@
 filename = 'monk1-train.txt';
 f = @tanh;              % hidden activation function
 h = 124;                % number of hidden units
-lambda = 0;             % regularization parameter, obtained from grid search
-alpha = 0.9;            % momentum coefficient, obtained from grid search
-eps = 1e-4;
+eps = 1e-6;
 % --- end of parameter
 
 
@@ -23,6 +21,8 @@ X = X';                 % transpose to make it easier
 T = T';                 % transpose to make it easier
 beta = rand(h,m)*2-1;   % randomly initialized beta, range in [-1,1]
 
+%[beta_nag, errors, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta);
+lambda = 0;
 
 % ------- True Solution -------
 [beta_opt, opt_val, opt_val_grad] = true_solution(X, T, W, b, f, N, h, m, lambda);
@@ -44,7 +44,7 @@ for i = 1:N
 end
 hessian = 2/N * (hessian + lambda);
 eta = 1/norm(hessian);
-[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, alpha, N, X, T, W, b, f, true, intmax, 0);
+[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, intmax, 0);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_nag));
 
 
@@ -65,14 +65,28 @@ errors_nag = errors_nag - opt_val;
 errors_bfgs_bls = errors_bfgs_bls - opt_val;
 errors_bfgs_awls = errors_bfgs_awls - opt_val;
 
+
 figure
-semilogy(1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_bls)), errors_bfgs_bls, 1:(length(errors_bfgs_awls)), errors_bfgs_awls)
-title('??')
-xlabel('iteration')
-ylabel('log(Error)')
-legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
+semilogy(1:(length(errors_nag)), errors_nag)
+title('NAG')
+xlabel('iteration', 'FontSize', 14)
+ylabel('log(Error)', 'FontSize', 14)
+saveas(gcf, 'Plots/monk1_NAG_convergence_rate.png')
+
+figure
+semilogy(1:(length(errors_bfgs_awls)), errors_bfgs_awls)
+title('BFGS (AWLS)')
+xlabel('iteration', 'FontSize', 14)
+ylabel('log(Error)', 'FontSize', 14)
+saveas(gcf, 'Plots/monk1_BFGS_AWLS_convergence_rate.png')
 
 
+figure
+semilogy(1:(length(errors_bfgs_bls)), errors_bfgs_bls)
+title('BFGS (BLS)')
+xlabel('iteration', 'FontSize', 14)
+ylabel('log(Error)', 'FontSize', 14)
+saveas(gcf, 'Plots/monk1_BFGS_BLS_convergence_rate.png')
 
 
 function score = accuracy(X, T, W, b, f, N, beta)
