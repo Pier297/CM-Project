@@ -55,7 +55,7 @@ while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && norm(gr) > eps
     prevError = v;
 
     iter = iter + 1;
-    errors(iter) = v;
+    errors(iter+1) = v;
 end
 tEnd = toc(tStart);
 

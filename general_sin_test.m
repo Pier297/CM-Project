@@ -15,7 +15,7 @@ ylabel('sin(x)', 'FontSize', 14)
 saveas(gcf, 'Plots/sin_training_data.png')
 
 f = @tanh;                    % hidden activation function
-eps = 1e-4;
+eps = 1e-6;
 
 n = size(X,2);          % input dimension
 m = size(T,2);          % output dimension
@@ -42,100 +42,92 @@ for i = 1:N
     hessian = hessian + (hidden_out * hidden_out');
 end
 hessian = 2/N * (hessian + lambda);
-eta = 1/norm(hessian);
+eta = 1/norm(hessian)
+
 [beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, intmax, 0);
 fprintf('MSE = %d\n', errors_nag(length(errors_nag)));
 
+
+% ------- BFGS (BLS) -------
+B = eye(h*m);
+[beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true);
+fprintf('MSE = %d\n', errors_bfgs_bls(length(errors_bfgs_bls)));
+
+% ------- BFGS (AWLS) -------
+B = eye(h*m);
+[beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', true);
+fprintf('MSE = %d\n', errors_bfgs_awls(length(errors_bfgs_awls)));
+
+
+% ------------- PLOT -----------
+
+% Real solution
 figure
-% plot training data
 scatter(X, T)
-title('NAG | training data vs model prediction')
-xlabel('x', 'FontSize', 14)
-ylabel('sin(x)', 'FontSize', 14)
+hold on
+Y = [];
+for i = 1:N
+   Y = [Y, out(f, W, b, beta_opt, X(:, i))]; 
+end
+plot(X, Y)
+
+% NAG
 hold on
 Y = [];
 for i = 1:N
    Y = [Y, out(f, W, b, beta_nag, X(:, i))]; 
 end
 plot(X, Y)
-saveas(gcf, 'Plots/NAG_sin_prediction_vs_training_data.png')
-legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
 
-
-% ------- BFGS (BLS) -------
-B = eye(h*m);
-[beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS');
-fprintf('MSE = %d\n', errors_bfgs_bls(length(errors_bfgs_bls)));
-
-figure
-% plot training data
-scatter(X, T)
-title('BFGS (BLS) | training data vs model prediction')
-xlabel('x', 'FontSize', 14)
-ylabel('sin(x)', 'FontSize', 14)
+% BFGS (BLS)
 hold on
 Y = [];
 for i = 1:N
    Y = [Y, out(f, W, b, beta_bfgs_bls, X(:, i))]; 
 end
 plot(X, Y)
-saveas(gcf, 'Plots/BFGS_BLS_sin_prediction_vs_training_data.png')
-legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
 
-
-% ------- BFGS (AWLS) -------
-B = eye(h*m);
-[beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS');
-fprintf('MSE = %d\n', errors_bfgs_awls(length(errors_bfgs_awls)));
-
-figure
-% plot training data
-scatter(X, T)
-title('BFGS (AWLS) | training data vs model prediction')
-xlabel('x', 'FontSize', 14)
-ylabel('sin(x)', 'FontSize', 14)
+% BFGS (AWLS)
 hold on
 Y = [];
 for i = 1:N
    Y = [Y, out(f, W, b, beta_bfgs_awls, X(:, i))]; 
 end
 plot(X, Y)
-saveas(gcf, 'Plots/BFGS_AWLS_sin_prediction_vs_training_data.png')
-legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
 
-% ---
-% Plot log convergence
+xlabel('x', 'FontSize', 14)
+ylabel('sin(x)', 'FontSize', 14)
+legend({'Training data', 'Model prediction'}, 'Location', 'southwest')
+legend('Training Data', 'Real Solution', 'NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
+
+%saveas(gcf, 'Plots/e10-1_h100_sin_prediction_vs_training_data.png')
+%saveas(gcf, 'Plots/e10-3_h100_sin_prediction_vs_training_data.png')
+saveas(gcf, 'Plots/e10-6_h100_sin_prediction_vs_training_data.png')
+
+% --- Plot log convergence
 errors_nag = errors_nag - opt_val;
 errors_bfgs_bls = errors_bfgs_bls - opt_val;
 errors_bfgs_awls = errors_bfgs_awls - opt_val;
 
 
 figure
-semilogy(1:(length(errors_nag)), errors_nag)
-title('NAG')
+semilogy(1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_awls)), errors_bfgs_awls, 1:(length(errors_bfgs_bls)), errors_bfgs_bls)
 xlabel('iteration', 'FontSize', 14)
 ylabel('log(Error)', 'FontSize', 14)
-saveas(gcf, 'Plots/sin_NAG_convergence_rate.png')
+legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
+
+%saveas(gcf, 'Plots/10-1_100_sin_convergence_rate.png')
+%saveas(gcf, 'Plots/10-3_100_sin_convergence_rate.png')
+saveas(gcf, 'Plots/10-6_100_sin_convergence_rate.png')
 
 figure
-semilogy(1:(length(errors_bfgs_awls)), errors_bfgs_awls)
-title('BFGS (AWLS)')
+semilogy(1:(length(errors_bfgs_awls)), errors_bfgs_awls, 1:(length(errors_bfgs_bls)), errors_bfgs_bls)
 xlabel('iteration', 'FontSize', 14)
 ylabel('log(Error)', 'FontSize', 14)
-saveas(gcf, 'Plots/sin_BFGS_AWLS_convergence_rate.png')
+legend('BFGS (BLS)', 'BFGS (AWLS)')
 
-
-figure
-semilogy(1:(length(errors_bfgs_bls)), errors_bfgs_bls)
-title('BFGS (BLS)')
-xlabel('iteration', 'FontSize', 14)
-ylabel('log(Error)', 'FontSize', 14)
-saveas(gcf, 'Plots/sin_BFGS_BLS_convergence_rate.png')
-
-%, 1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_bls)), errors_bfgs_bls, 1:(length(errors_bfgs_awls)), errors_bfgs_awls)
-%legend('GD', 'NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
-
-
+%saveas(gcf, 'Plots/10-3_100_sin_BFGS_only_convergence_rate.png')
+saveas(gcf, 'Plots/10-6_100_sin_BFGS_only_convergence_rate.png')
 
     function [elm_out] = out(f, W, b, beta, x)
         elm_out = beta' * f(W * x + b);

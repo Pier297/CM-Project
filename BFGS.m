@@ -1,4 +1,4 @@
-function [beta, errors] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N, line_search)
+function [beta, errors] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N, line_search, print_stat)
 % BFGS
 %
 % Input:
@@ -54,28 +54,23 @@ while (norm(g) > eps)
 end
 tEnd = toc(tStart);
 
-fprintf('\n### BFGS (%s) ###\n', line_search)
-fprintf('# iterations = %d\nFinal error = %d\nElapsed time = %d\n', iter, v, tEnd);
+if print_stat
+    fprintf('\n### BFGS (%s) ###\n', line_search)
+    fprintf('# iterations = %d\nFinal error = %d\nElapsed time = %d\n', iter, v, tEnd);
+    all_decreasing = true;
 
-% Plot
-%figure
-%scatter(1:iter+1, errors)
-%title('BFGS | Error function')
-%xlabel('iteration')
-%ylabel('Error')
-all_decreasing = true;
-
-% Test all decreasing errors
-for i = 1:iter
-    if errors(i) < errors(i+1)
-        all_decreasing = false;
-        break;
+    % Test all decreasing errors
+    for i = 1:iter
+        if errors(i) < errors(i+1)
+            all_decreasing = false;
+            break;
+        end
     end
-end
-if all_decreasing
-    fprintf('The errors were all decreasing.\n')
-else
-    fprintf('The errors were *NOT* all decreasing.\n')
+    if all_decreasing
+        fprintf('The errors were all decreasing.\n')
+    else
+        fprintf('The errors were *NOT* all decreasing.\n')
+    end
 end
 
 end
