@@ -1,4 +1,4 @@
-function [beta, errors] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N, line_search, print_stat)
+function [beta, errors, iter, tEnd] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N, line_search, print_stat)
 % BFGS
 %
 % Input:

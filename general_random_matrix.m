@@ -17,7 +17,7 @@ X = X';                 % transpose to make it easier
 T = T';                 % transpose to make it easier
 beta = rand(h,m)*2-1;   % randomly initialized beta, range in [-1,1]
 
-%[beta_nag, errors, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta);
+%[beta_nag, errors, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta, [], []);
 lambda = 0;
 
 % ------- True Solution -------

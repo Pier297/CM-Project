@@ -28,7 +28,7 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-%[beta_nag, errors, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta);
+%[beta_nag, errors, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta, [], []);
 lambda = 0;
 
 [beta_opt, opt_val, opt_val_grad] = true_solution(X, T, W, b, f, N, h, m, lambda);

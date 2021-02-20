@@ -1,5 +1,5 @@
 % --- parameter
-filename = 'monk1-train.txt';
+filename = 'data/monk1-train.txt';
 f = @tanh;              % hidden activation function
 h = 124;                % number of hidden units
 eps = 1e-6;
@@ -21,11 +21,12 @@ X = X';                 % transpose to make it easier
 T = T';                 % transpose to make it easier
 beta = rand(h,m)*2-1;   % randomly initialized beta, range in [-1,1]
 
-%[beta_nag, errors, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta);
+%[beta_nag, errors, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta, [], []);
 lambda = 0;
 
 % ------- True Solution -------
 [beta_opt, opt_val, opt_val_grad] = true_solution(X, T, W, b, f, N, h, m, lambda);
+fprintf('Optimal value = %d\n', opt_val);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_opt));
 
 
@@ -44,19 +45,19 @@ for i = 1:N
 end
 hessian = 2/N * (hessian + lambda);
 eta = 1/norm(hessian);
-[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, intmax, 0);
+[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, 5000, 0);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_nag));
 
 
 % ------- BFGS (BLS) -------
 B = eye(h*m);
-[beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS');
+[beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_bfgs_bls));
 
 
 % ------- BFGS (AWLS) -------
 B = eye(h*m);
-[beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS');
+[beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', true);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_bfgs_awls));
 
 
@@ -71,14 +72,14 @@ semilogy(1:(length(errors_nag)), errors_nag)
 title('NAG')
 xlabel('iteration', 'FontSize', 14)
 ylabel('log(Error)', 'FontSize', 14)
-saveas(gcf, 'Plots/monk1_NAG_convergence_rate.png')
+%saveas(gcf, 'Plots/monk_NAG_convergence_rate.png')
 
 figure
 semilogy(1:(length(errors_bfgs_awls)), errors_bfgs_awls)
 title('BFGS (AWLS)')
 xlabel('iteration', 'FontSize', 14)
 ylabel('log(Error)', 'FontSize', 14)
-saveas(gcf, 'Plots/monk1_BFGS_AWLS_convergence_rate.png')
+%saveas(gcf, 'Plots/monk_BFGS_AWLS_convergence_rate.png')
 
 
 figure
@@ -86,7 +87,16 @@ semilogy(1:(length(errors_bfgs_bls)), errors_bfgs_bls)
 title('BFGS (BLS)')
 xlabel('iteration', 'FontSize', 14)
 ylabel('log(Error)', 'FontSize', 14)
-saveas(gcf, 'Plots/monk1_BFGS_BLS_convergence_rate.png')
+%saveas(gcf, 'Plots/monk_BFGS_BLS_convergence_rate.png')
+
+figure
+semilogy(1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_bls)), errors_bfgs_bls, 1:(length(errors_bfgs_awls)), errors_bfgs_awls)
+title('Convergence')
+xlabel('iteration', 'FontSize', 14)
+ylabel('log(Error)', 'FontSize', 14)
+legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
+%saveas(gcf, 'Plots/monk_convergence_rate.png')
+
 
 
 function score = accuracy(X, T, W, b, f, N, beta)

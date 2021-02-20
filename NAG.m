@@ -1,4 +1,4 @@
-function [beta, errors] = NAG(E, beta, eps, eta, lambda, N, X, T, W, b, f, print_stat, MAX_ITER, MAX_UNLUCKY_STEPS)
+function [beta, errors, iter, tEnd] = NAG(E, beta, eps, eta, lambda, N, X, T, W, b, f, print_stat, MAX_ITER, MAX_UNLUCKY_STEPS)
 % Nesterov' Accelerated Gradient Descent with L2 regularization
 % Inputs:
 %   E:    Error function
