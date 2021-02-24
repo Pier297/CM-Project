@@ -1,16 +1,5 @@
-global X
-global T
-global h
-global lambda
-global f
-global W
-global b
-global m
-global N
+rng(1)
 
-%X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
-%T = [2,5 ; 4,6 ; 6,8];        % target
-%h = 4;                        % number of hidden units
 X = zeros(100, 1);
 T = zeros(100, 1);
 c = 1;
@@ -36,4 +25,4 @@ beta = randn(h,m);      % randomly initialized beta
 
 B = eye(h*m);           % initial approximation of inverse Hessian
 
-beta = BFGS(@ObjectiveFunc, beta, B, eps);
+beta = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true);

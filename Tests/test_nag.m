@@ -1,7 +1,5 @@
+rng(1)
 
-
-%X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
-%T = [2,5 ; 4,6 ; 6,8];        % target
 X = zeros(100, 1);
 T = zeros(100, 1);
 c = 1;
@@ -25,7 +23,7 @@ T = T';                 % transpose to make it easier
 
 beta = randn(h,m);      % randomly initialized beta
 
-[alpha_t_minus_1, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps);
+[~, ~, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T, f, eps, N, W, b, beta, [], []);
 
 % Compute hessian
 hessian = 0;
@@ -41,7 +39,7 @@ hessian = 2/N * (hessian + lambda);
 eta = 1/norm(hessian);
 
 %beta = NAG(@ObjectiveFunc, beta, eps);
-[beta_nag, errors] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, alpha_t_minus_1, N, X, T, W, b, f);
+[beta_nag, errors] = NAG(@ObjectiveFunc, beta, 1e-3, eta, lambda, N, X, T, W, b, f, true, intmax, intmax);
 
  % Plot the stats
 figure

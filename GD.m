@@ -57,5 +57,11 @@ for i = 1:iter-1
         break;
     end
 end
-all_decreasing
+if all_decreasing
+    fprintf('The errors were all decreasing.\n')
+else
+    fprintf('The errors were *NOT* all decreasing.\n')
+end
+fprintf('MSE = %d\n', v)
+
 end

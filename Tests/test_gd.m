@@ -1,16 +1,5 @@
-global X
-global T
-global h
-global eta
-global lambda
-global f
-global W
-global b
-global m
-global N
+rng(1)
 
-%X = [1,2,3 ; 2,3,4 ; 3,4,5];  % input
-%T = [2,5 ; 4,6 ; 6,8];        % target
 X = zeros(100, 1);
 T = zeros(100, 1);
 c = 1;
@@ -51,4 +40,4 @@ eta = 1/norm(hessian);
 
 %eta = 0.1;
 
-beta = GD(@ObjectiveFunc, beta, eps);
+beta = GD(@ObjectiveFunc, beta, eps, h, m, N, T, W, X, b, f, eta, lambda);
