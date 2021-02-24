@@ -61,7 +61,7 @@ tEnd = toc(tStart);
 
 if print_stat
     fprintf('\n### NAG ###\n')
-    fprintf('# iterations = %d\nFinal error = %d\nElapsed time = %d\n', iter, v, tEnd / iter);
+    fprintf('# iterations = %d\nFinal error = %d\nElapsed time/iteration = %d\n', iter, v, tEnd / iter);
     
     % Test all decreasing errors
     all_decreasing = true;
