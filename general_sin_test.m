@@ -22,9 +22,9 @@ eps = 1e-6;
 n = size(X,2);          % input dimension
 m = size(T,2);          % output dimension
 N = size(X,1);          % number of samples
-h = N*3;                        % number of hidden units  
-W = randn(h,n);         % weight between input and hidden layer
-b = randn(h,1);         % bias of hidden nodes
+h = N;                        % number of hidden units  
+W = randn(h,n)*2-1;         % weight between input and hidden layer
+b = randn(h,1)*2-1;         % bias of hidden nodes
 X = X';                 % transpose to make it easier
 T = T';                 % transpose to make it easier
 

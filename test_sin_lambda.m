@@ -1,11 +1,11 @@
 rng(1);
 
 f   = @tanh;
-eps = 1e-7;
+eps = 1e-6;
 
 % ---------------- sin(x) experiments ------------------ %
 
-[X, T_Noise, T_Real] = create_sin_dataset(0, 10, 100, 0.5);
+[X, T_Noise, T_Real] = create_sin_dataset(0, 10, 100, 0);
 
 n = size(X,2);
 m = size(T_Noise,2);
@@ -23,7 +23,7 @@ T_Real = T_Real';
 
 %fprintf('best lambda = %d\n', lambda)
 
-lambda = 1;
+lambda = 0;
 
 %plot_sin(X, T_Noise, T_Real, [], [], [], [], f, W, b, N, 'Plots/sin_noise_data.png')
 
@@ -91,9 +91,9 @@ end
 % h = number of hidden units
 % m = output dimension
 function [W, b, beta] = create_elm(n, h, m)
-    W    = randn(h, n);
-    b    = randn(h, 1);
-    beta = randn(h, m);
+    W    = randn(h, n)*2-1;
+    b    = randn(h, 1)*2-1;
+    beta = randn(h, m)*2-1;
 end
 
 % define N_samples points of the form (x, sin(x) +- noise)

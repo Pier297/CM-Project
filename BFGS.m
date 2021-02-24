@@ -56,7 +56,7 @@ tEnd = toc(tStart);
 
 if print_stat
     fprintf('\n### BFGS (%s) ###\n', line_search)
-    fprintf('# iterations = %d\nFinal error = %d\nElapsed time = %d\n', iter, v, tEnd);
+    fprintf('# iterations = %d\nFinal error = %d\nElapsed time = %d\n', iter, v, tEnd / iter);
     all_decreasing = true;
 
     % Test all decreasing errors
