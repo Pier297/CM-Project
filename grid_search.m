@@ -1,6 +1,6 @@
 function [best_beta, best_errors, lambda] = grid_search(Optimizer, Error, X, T, f, eps, N, W, b, beta, X_test, T_test)
     min_lambda = 0;
-    max_lambda = 0.01;
+    max_lambda = 1e-6;
     
     samples = 10;
 
@@ -24,22 +24,20 @@ function [best_beta, best_errors, lambda] = grid_search(Optimizer, Error, X, T, 
 
         eta = 1/norm(hessian);
 
-        [beta_nag, errs] = Optimizer(Error, beta, eps, eta, l, N, X, T, W, b, f, false, 2000, 5);
+        [beta_nag, errs] = Optimizer(Error, beta, eps, eta, l, N, X, T, W, b, f, false, intmax, intmax);
 
         if (isempty(X_test))
             [e, ~] = Error(beta_nag, X, T, W, b, N, f, l);
         else
             [e, ~] = Error(beta_nag, X_test, T_test, W, b, size(X_test,2), f, l);
         end
-
-        fprintf('%d\t%d\n', l, e)
-
+        
         % if good then save hyperparameter conf.
         if e < best_error
             best_error = e
             best_beta = beta_nag;
             best_errors = errs;
-            lambda = l;
+            lambda = l
         end
     end
     

@@ -1,7 +1,7 @@
 % --- parameter
 filename = 'data/monk1-train.txt';
 f = @tanh;              % hidden activation function
-h = 124;                % number of hidden units
+h = 122;                % number of hidden units
 eps = 1e-6;
 % --- end of parameter
 

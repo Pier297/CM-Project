@@ -1,11 +1,13 @@
 rng(1);                 % seed to make random values repeatable
 
-X = zeros(100, 1);
-T = zeros(100, 1);
+N_samples = 100;
+
+X = zeros(N_samples, 1);
+T = zeros(N_samples, 1);
 c = 1;
-for i = 0:0.1:10
+for i = 0:10/N_samples:10
     X(c) = i;
-    T(c) = sin(i); %+ (rand - 0.5)/3;
+    T(c) = sin(i);
     c = c + 1;
 end
 
@@ -20,7 +22,7 @@ eps = 1e-6;
 n = size(X,2);          % input dimension
 m = size(T,2);          % output dimension
 N = size(X,1);          % number of samples
-h = N;                        % number of hidden units  
+h = N*3;                        % number of hidden units  
 W = randn(h,n);         % weight between input and hidden layer
 b = randn(h,1);         % bias of hidden nodes
 X = X';                 % transpose to make it easier
@@ -44,7 +46,7 @@ end
 hessian = 2/N * (hessian + lambda);
 eta = 1/norm(hessian)
 
-[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, intmax, 0);
+[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, 1e-3, eta, lambda, N, X, T, W, b, f, true, intmax, intmax);
 fprintf('MSE = %d\n', errors_nag(length(errors_nag)));
 
 
@@ -102,7 +104,10 @@ legend('Training Data', 'Real Solution', 'NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
 
 %saveas(gcf, 'Plots/e10-1_h100_sin_prediction_vs_training_data.png')
 %saveas(gcf, 'Plots/e10-3_h100_sin_prediction_vs_training_data.png')
-saveas(gcf, 'Plots/e10-6_h100_sin_prediction_vs_training_data.png')
+%saveas(gcf, 'Plots/e10-6_h100_sin_prediction_vs_training_data.png')
+
+
+return
 
 % --- Plot log convergence
 errors_nag = errors_nag - opt_val;

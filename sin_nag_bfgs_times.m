@@ -24,14 +24,15 @@ bfgs_awls_times = (0);
 bfgs_bls_times = (0);
 
 iter = 1;
-h_min = 100;
-h_max = 200;
-step = 10;
+h_min = 101;
+h_max = 101;
+step = 1;
 
 for h = h_min:step:h_max
-    beta = randn(h,m);      % randomly initialized beta
     W = randn(h,n);         % weight between input and hidden layer
     b = randn(h,1);         % bias of hidden nodes
+    beta = randn(h,m);      % randomly initialized beta
+    
     
     hessian = 0;
     for i = 1:N
@@ -44,7 +45,7 @@ for h = h_min:step:h_max
     eta = 1/norm(hessian);
     
     % Try k times and then take avg
-    k = 30;
+    k = 100;
     
     % --- Time NAG
     ticStart = tic;
@@ -53,7 +54,11 @@ for h = h_min:step:h_max
     end
     tEnd = toc(ticStart);
     
-    nag_times(iter) = tEnd / k;
+    fprintf('\n-- NAG --\n')
+    fprintf('#iter = %d\n', length(errors_nag))
+    fprintf('final error = %d\n', errors_nag(length(errors_nag)))
+    fprintf('time/iter = %d\n', (tEnd / k) / length(errors_nag))
+    nag_times(iter) = (tEnd / k) / length(errors_nag);
     
     % --- Time BFGS (BLS)
     B = eye(h*m);
@@ -62,8 +67,14 @@ for h = h_min:step:h_max
         [beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', false);
     end
     tEnd = toc(ticStart);
-    
-    bfgs_bls_times(iter) = tEnd / k;
+    %check if this is greater than 1/10s to get accuracy, otherwise
+    %increase k
+    %fprintf('time = %d\n', (tEnd))
+    bfgs_bls_times(iter) = (tEnd / k) / length(errors_bfgs_bls);
+    fprintf('\n-- BLS --\n')
+    fprintf('#iter = %d\n', length(errors_bfgs_bls))
+    fprintf('final error = %d\n', errors_bfgs_bls(length(errors_bfgs_bls)))
+    fprintf('time/iter = %d\n', (tEnd / k) / length(errors_bfgs_bls))
     
     % --- Time BFGS (AWLS)
     B = eye(h*m);
@@ -73,12 +84,18 @@ for h = h_min:step:h_max
     end
     tEnd = toc(ticStart);
     
-    bfgs_awls_times(iter) = tEnd / k;
+    bfgs_awls_times(iter) = (tEnd / k) / length(errors_bfgs_awls);
+    fprintf('\n-- AWLS --\n')
+    fprintf('#iter = %d\n', length(errors_bfgs_awls))
+    fprintf('final error = %d\n', errors_bfgs_awls(length(errors_bfgs_awls)))
+    fprintf('time/iter = %d\n', (tEnd / k) / length(errors_bfgs_awls))
     
     fprintf('%d/%d\n', step*(iter-1), h_max-h_min)
     
     iter = iter + 1;
 end
+
+return
 
 plot(h_min:step:h_max, nag_times, h_min:step:h_max, bfgs_bls_times, h_min:step:h_max, bfgs_awls_times)
 legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
