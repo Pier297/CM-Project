@@ -2,7 +2,7 @@ rng(1);
 
 % --- parameter
 f = @tanh;              % hidden activation function
-n = 10;
+n = 5;
 eps = 1e-3;
 
 N = 250;
@@ -19,27 +19,30 @@ X = X';                 % transpose to make it easier
 T = T';                 % transpose to make it easier
 beta = rand(h,m)*2-1;   % randomly initialized beta, range in [-1,1]
 
-original_beta = beta;
+original_W = W;
 
-[U, S, V] = svd(beta);
+[U, S, V] = svd(W);
 
-beta_well_conditioned = U * S * V';
+W_well_conditioned = U * S * V';
 
-S(1:6, :)
-S(5,5)
-S(5, 5) = 0; % Make the weights close to singular
+%S(1, 1) = 0;
+%S(2, 2) = 0;
+%S(3, 3) = 0;
+S(4, 4) = 0;
+S(5, 5) = 0;
+b(5) = 0;
+%b(1) = 0;
+%b(2) = 0;
+%b(3) = 0;
+b(4) = 0;
 
-beta_ill_conditioned = U * S * V';
+W_ill_conditioned = U * S * V';
 
-beta = beta_ill_conditioned;
+W = W_ill_conditioned;
 
+%rank(W_well_conditioned)
 
-%norm(beta_well_conditioned - beta)
-%norm(beta_ill_conditioned - beta)
-
-%rank(beta_well_conditioned)
-
-%rank(beta_ill_conditioned)
+%rank(W_ill_conditioned)
 
 %norm(beta_well_conditioned - beta)
 
@@ -84,4 +87,4 @@ semilogy(1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_awls)), error
 xlabel('iteration', 'FontSize', 14)
 ylabel('log(Error)', 'FontSize', 14)
 legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
-saveas(gcf, 'Plots/random_convergence_rate_t1.png')
+saveas(gcf, 'Plots/random_ill_convergence_rate_t1.png')

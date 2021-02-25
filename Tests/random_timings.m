@@ -1,43 +1,40 @@
-rng(1);                 % seed to make random values repeatable
+rng(1);   
 
-X = zeros(100, 1);
-T = zeros(100, 1);
-c = 1;
-for i = 0:0.1:10
-    X(c) = i;
-    T(c) = sin(i); %+ (rand - 0.5)/3;
-    c = c + 1;
-end
+% --- parameter
+f = @tanh;              % hidden activation function
+n = 5;
+eps = 1e-3;
 
-f = @tanh;                    % hidden activation function
-eps = 1e-6;
+N = 250;
+h = N;                % number of hidden units
+% --- end of parameter
 
-n = size(X,2);          % input dimension
-m = size(T,2);          % output dimension
-N = size(X,1);          % number of samples
+X = randn(N, n);
+
+W = rand(h,n)*2-1;      % weight between input and hidden layer, range in [-1,1]
+b = rand(h,1)*2-1;      % bias of hidden nodes, range in [-1,1]
 X = X';                 % transpose to make it easier
-T = T';                 % transpose to make it easier
+
 lambda = 0;
+
 
 nag_times = (0);
 bfgs_awls_times = (0);
 bfgs_bls_times = (0);
 
 iter = 1;
-h_min = 101;
-h_max = 101;
+m_min = 1;
+m_max = 10;
 step = 1;
 
-for h = h_min:step:h_max
-    W = randn(h,n);         % weight between input and hidden layer
-    b = randn(h,1);         % bias of hidden nodes
-    beta = randn(h,m);      % randomly initialized beta
-    
+for m = m_min:step:m_max
+    T = randn(N, m);
+    T = T';
+    beta = rand(h,m)*2-1;   % randomly initialized beta, range in [-1,1]
     
     hessian = 0;
     for i = 1:N
         x = X(:,i);
-        t = T(:,i);
         hidden_out = f(W * x + b);
         hessian = hessian + (hidden_out * hidden_out');
     end
@@ -45,7 +42,7 @@ for h = h_min:step:h_max
     eta = 1/norm(hessian);
     
     % Try k times and then take avg
-    k = 100;
+    k = 1;
     
     % --- Time NAG
     ticStart = tic;
@@ -90,11 +87,11 @@ for h = h_min:step:h_max
     fprintf('final error = %d\n', errors_bfgs_awls(length(errors_bfgs_awls)))
     fprintf('time/iter = %d\n', (tEnd / k) / length(errors_bfgs_awls))
     
-    fprintf('%d/%d\n', step*(iter-1), h_max-h_min)
+    fprintf('%d/%d\n', step*(iter-1), m_max-m_min)
     
     iter = iter + 1;
 end
 
-plot(h_min:step:h_max, nag_times, h_min:step:h_max, bfgs_bls_times, h_min:step:h_max, bfgs_awls_times)
-legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
-saveas(gcf, 'Plots/sin_timings.png')
+plot(m_min:step:m_max, nag_times, m_min:step:m_max, bfgs_bls_times, m_min:step:m_max, bfgs_awls_times)
+legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)', 'Location', 'northwest')
+saveas(gcf, 'Plots/random_timings.png')

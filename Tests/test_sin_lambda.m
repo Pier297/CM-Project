@@ -164,7 +164,7 @@ function plot_sin(X, T_Noise, T_Real, beta_opt, beta_nag, beta_bfgs_bls, beta_bf
         plot(X, Y)
     end
     
-    legend(legends, 'Location', 'southwest')
+    legend(legends, 'Location', 'northwest')
     
     if isempty(saveto) == false
        saveas(gcf, saveto) 
