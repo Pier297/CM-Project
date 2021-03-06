@@ -1,8 +1,8 @@
 % --- parameter
 filename = 'data/monk1-train.txt';
 f = @tanh;              % hidden activation function
-h = 122;                % number of hidden units
-eps = 1e-6;
+h = 124;                % number of hidden units
+eps = 1e-10;
 % --- end of parameter
 
 
@@ -47,55 +47,35 @@ hessian = 2/N * (hessian + lambda);
 eta = 1/norm(hessian);
 [beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, 5000, 0);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_nag));
+fprintf('Relative error = %d\n', (errors_nag(end) - opt_val)/max(abs(opt_val),1));
 
 
 % ------- BFGS (BLS) -------
 B = eye(h*m);
 [beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_bfgs_bls));
+fprintf('Relative error = %d\n', (errors_bfgs_bls(end) - opt_val)/max(abs(opt_val),1));
 
 
 % ------- BFGS (AWLS) -------
 B = eye(h*m);
 [beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', true);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_bfgs_awls));
+fprintf('Relative error = %d\n', (errors_bfgs_awls(end) - opt_val)/max(abs(opt_val),1));
 
 
 % ------- Plot log scale -------
-errors_nag = errors_nag - opt_val;
-errors_bfgs_bls = errors_bfgs_bls - opt_val;
-errors_bfgs_awls = errors_bfgs_awls - opt_val;
-
-
-figure
-semilogy(1:(length(errors_nag)), errors_nag)
-title('NAG')
-xlabel('iteration', 'FontSize', 14)
-ylabel('log(Error)', 'FontSize', 14)
-%saveas(gcf, 'Plots/monk_NAG_convergence_rate.png')
-
-figure
-semilogy(1:(length(errors_bfgs_awls)), errors_bfgs_awls)
-title('BFGS (AWLS)')
-xlabel('iteration', 'FontSize', 14)
-ylabel('log(Error)', 'FontSize', 14)
-%saveas(gcf, 'Plots/monk_BFGS_AWLS_convergence_rate.png')
-
-
-figure
-semilogy(1:(length(errors_bfgs_bls)), errors_bfgs_bls)
-title('BFGS (BLS)')
-xlabel('iteration', 'FontSize', 14)
-ylabel('log(Error)', 'FontSize', 14)
-%saveas(gcf, 'Plots/monk_BFGS_BLS_convergence_rate.png')
+errors_nag = (errors_nag - opt_val) / max(abs(opt_val),1);
+errors_bfgs_bls = (errors_bfgs_bls - opt_val) / max(abs(opt_val),1);
+errors_bfgs_awls = (errors_bfgs_awls - opt_val) / max(abs(opt_val),1);
 
 figure
 semilogy(1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_bls)), errors_bfgs_bls, 1:(length(errors_bfgs_awls)), errors_bfgs_awls)
 title('Convergence')
 xlabel('iteration', 'FontSize', 14)
-ylabel('log(Error)', 'FontSize', 14)
+ylabel('( E(\beta) - E* ) / E*', 'FontSize', 14)
 legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
-%saveas(gcf, 'Plots/monk_convergence_rate.png')
+saveas(gcf, 'Plots/monk1_convergence_rate.png')
 
 
 

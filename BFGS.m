@@ -12,9 +12,15 @@ k = 0;
 [v, g] = E(beta, X, T, W, b, N, f, lambda);
 errors = (v);
 g = g(:);
+ng0 = norm(g);
 
 tStart = tic;
-while (norm(g) > eps)
+while (norm(g) > eps * ng0)
+    % If B is NAN, then beta does not change, so we can stop
+    if isnan(B)
+        break
+    end
+
     % Compute direction
     p = -B * g;
 

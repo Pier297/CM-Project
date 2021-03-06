@@ -22,6 +22,7 @@ a_t_minus_1 = 1;
 delta_beta_t_minus_1 = 0;
 
 [v,gr] = E(beta, X, T, W, b, N, f, lambda);
+ng0 = norm(gr);
 
 errors = (v);
 iter = 0;
@@ -30,7 +31,7 @@ prevError = v;
 unluckySteps = 0;
 
 tStart = tic;
-while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && norm(gr) > eps
+while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && norm(gr) > eps * ng0
     a_t = update_a(a_t_minus_1);
     
     alpha_t_minus_1 = (a_t_minus_1 - 1)/a_t;
