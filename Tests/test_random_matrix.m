@@ -1,12 +1,14 @@
-rng(1);   
+rng(1);
 
 % --- parameter
 f = @tanh;              % hidden activation function
 n = 5;
 eps = 1e-3;
 
+precision = 1e-5;
+
 N = 250;
-h = N;                % number of hidden units
+h = 250;                % number of hidden units
 m = 5;
 % --- end of parameter
 
@@ -34,26 +36,21 @@ for i = 1:N
     hessian = hessian + (hidden_out * hidden_out');
 end
 hessian = 2/N * (hessian + lambda);
-eta = 1/norm(hessian)
-[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, intmax, intmax);
+eta = 1/norm(hessian);
+[beta_nag, errors_nag, ~, ~] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, intmax, intmax, opt_val, precision, true);
 
 
-% ------- BFGS (BLS) -------
 B = eye(h*m);
-[beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true);
-%fprintf('MSE = %d\n', errors_bfgs_bls(length(errors_bfgs_bls)));
+[beta_bfgs_bls, errors_bfgs_bls, ~, bls_prec_tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true, opt_val, precision, true);
 
 
-% ------- BFGS (AWLS) -------
 B = eye(h*m);
-[beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', true);
-%fprintf('MSE = %d\n', errors_bfgs_awls(length(errors_bfgs_awls)));
-
+[beta_bfgs_awls, errors_bfgs_awls, ~, awls_prec_tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', true, opt_val, precision, true);
 
 % ------- Plot log scale -------
 figure
 semilogy(1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_awls)), errors_bfgs_awls, 1:(length(errors_bfgs_bls)), errors_bfgs_bls)
 xlabel('iteration', 'FontSize', 14)
-ylabel('log(Error)', 'FontSize', 14)
+ylabel('( E(\beta) - E* ) / E*', 'FontSize', 14)
 legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
 saveas(gcf, 'Plots/random_convergence_rate_t1.png')

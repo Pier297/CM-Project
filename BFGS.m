@@ -1,4 +1,4 @@
-function [beta, errors, iter, tEnd] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N, line_search, print_stat)
+function [beta, errors, tEnd, prec_tEnd] = BFGS(E, beta, B, eps, h, m, W, b, f, X, T, lambda, N, line_search, print_stat, opt_val, precision, keep_going_until_precision)
 % BFGS
 %
 % Input:
@@ -15,7 +15,15 @@ g = g(:);
 ng0 = norm(g);
 
 tStart = tic;
-while (norm(g) > eps * ng0)
+prec_tStart = tic;
+prec_tEnd = 0;
+got_precision = false;
+if keep_going_until_precision == false
+    prec_tEnd = toc(prec_tStart);
+end
+
+MAX_ITER = 500000;
+while iter <= MAX_ITER && ((keep_going_until_precision == false && norm(g) > eps * ng0) || (keep_going_until_precision == true && got_precision == false))
     % If B is NAN, then beta does not change, so we can stop
     if isnan(B)
         break
@@ -31,6 +39,11 @@ while (norm(g) > eps * ng0)
         [a, v_new, g_new] = BacktrackingLS(1, 0.9, 1e-4, beta, p, E, v, phid0, X, T, W, b, N, f, lambda);
     else
         [a, v_new, g_new] = ArmijoWolfeLS(1, 0.9, 1e-4, 0.9, beta, p, E, v, phid0, X, T, W, b, N, f, lambda);
+    end
+    
+    if (v_new - opt_val) <= precision
+       prec_tEnd = toc(prec_tStart);
+       got_precision = true;
     end
 
     beta_new = beta + a * p;

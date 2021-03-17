@@ -1,4 +1,4 @@
-function [beta, errors, iter, tEnd] = NAG(E, beta, eps, eta, lambda, N, X, T, W, b, f, print_stat, MAX_ITER, MAX_UNLUCKY_STEPS)
+function [beta, errors, tEnd, prec_tEnd] = NAG(E, beta, eps, eta, lambda, N, X, T, W, b, f, print_stat, MAX_ITER, MAX_UNLUCKY_STEPS, opt_val, precision, keep_going_until_precision)
 % Nesterov' Accelerated Gradient Descent with L2 regularization
 % Inputs:
 %   E:    Error function
@@ -31,7 +31,12 @@ prevError = v;
 unluckySteps = 0;
 
 tStart = tic;
-while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && norm(gr) > eps * ng0
+prec_tStart = tic;
+if keep_going_until_precision == false
+    prec_tEnd = toc(prec_tStart);
+end
+got_precision = false;
+while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && ((keep_going_until_precision == false && norm(gr) > eps * ng0) || (keep_going_until_precision == true && got_precision == false))
     a_t = update_a(a_t_minus_1);
     
     alpha_t_minus_1 = (a_t_minus_1 - 1)/a_t;
@@ -46,6 +51,11 @@ while unluckySteps <= MAX_UNLUCKY_STEPS && iter < MAX_ITER && norm(gr) > eps * n
     delta_beta_t_minus_1 = delta_beta_t;
     
     [v,gr] = E(beta, X, T, W, b, N, f, lambda);
+    
+    if (v - opt_val) <= precision
+       prec_tEnd = toc(prec_tStart);
+       got_precision = true;
+    end
     
     if v >= prevError
         unluckySteps = unluckySteps + 1;

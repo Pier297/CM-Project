@@ -42,27 +42,27 @@ end
 hessian = 2/N * (hessian + lambda);
 eta = 1/norm(hessian);
 for i = 1:k
-    [~, ~, iter, tEnd] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, false, 5000, 0);
+    [~, nag_errors, tEnd, ~] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, false, 5000, 0, -1, -1, false);
     nag_times(i) = tEnd;
-    nag_iters(i) = iter;
+    nag_iters(i) = length(nag_errors);
 end
 
 
 % ------- BFGS (BLS) -------
 B = eye(h*m);
 for i = 1:k
-    [~, ~, iter, tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', false);
+    [~, bls_errors, tEnd, ~] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', false, -1, -1, false);
     bfgs_bls_times(i) = tEnd;
-    bfgs_bls_iters(i) = iter;
+    bfgs_bls_iters(i) = length(bls_errors);
 end
 
 
 % ------- BFGS (AWLS) -------
 B = eye(h*m);
 for i = 1:k
-    [~, ~, iter, tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', false);
+    [~, awls_errors, tEnd, ~] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', false, -1, -1, false);
     bfgs_awls_times(i) = tEnd;
-    bfgs_awls_iters(i) = iter;
+    bfgs_awls_iters(i) = length(awls_errors);
 end
 
 

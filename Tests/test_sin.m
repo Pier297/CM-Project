@@ -3,7 +3,6 @@ rng(1);
 f   = @tanh;
 eps = 1e-6;
 
-% ---------------- sin(x) experiments ------------------ %
 
 [X, T_Noise, T_Real] = create_sin_dataset(0, 10, 100, 0);
 
@@ -19,55 +18,65 @@ T_Real = T_Real';
 
 [W, b, beta] = create_elm(n, h, m);
 
+lambda = 0;
+
+fprintf('lambda = %d\n', lambda)
+
+fprintf('true solution\n')
+
+%plot_sin(X, T_Noise, T_Real, [], [], [], [], f, W, b, N, 'Plots/sin_noise_data.png')
+
+[beta_opt, opt_val_noise, opt_val_grad] = true_solution(X, T_Noise, W, b, f, N, h, m, lambda);
+fprintf('NOISE MSE = %d\n', opt_val_noise)
+
+[opt_val_real, ~] = ObjectiveFunc(beta_opt, X, T_Real, W, b, N, f, lambda);
+fprintf('REAL MSE = %d\n', opt_val_real)
+
+%plot_sin(X, T_Noise, T_Real, beta_opt, [], [], [], f, W, b, N, 'Plots/sin_noise_nolambda_effect.png')
+
+% ---------------- sin(x) experiments ------------------ %
+
+
+precision = 1e-1; % relative error upper bound
+
+
 %[~, ~, lambda] = grid_search(@NAG, @ObjectiveFunc, X, T_Noise, f, eps, N, W, b, beta, X, T_Real);
 
 %fprintf('best lambda = %d\n', lambda)
 
-lambda = 0;
+eta = compute_eta(f, W, b, X, T_Noise, N, lambda);
+[beta_nag, errors_nag, ~, ~] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T_Noise, W, b, f, true, intmax, intmax, opt_val_noise, precision, true);
+%[beta_nag, errors_nag, ~, ~] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T_Noise, W, b, f, true, intmax, intmax, opt_val, precision, true);
 
-%plot_sin(X, T_Noise, T_Real, [], [], [], [], f, W, b, N, 'Plots/sin_noise_data.png')
-
-[beta_opt, opt_val, opt_val_grad] = true_solution(X, T_Noise, W, b, f, N, h, m, lambda);
-fprintf('true solution MSE = %d\n', opt_val)
-
-%plot_sin(X, T_Noise, T_Real, beta_opt, [], [], [], f, W, b, N, 'Plots/sin_noise_nolambda_effect.png')
-
-
-%eta = compute_eta(f, W, b, X, T_Noise, N, lambda);
-%[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T_Noise, W, b, f, false, intmax, intmax);
-
-%[v, ~] = ObjectiveFunc(beta_nag, X, T_Real, W, b, N, f, lambda);
-
-%fprintf('NAG\n')
-%fprintf('MSE noise = %d\n', errors_nag(length(errors_nag)))
-%fprintf('MSE real = %d\n', v)
-%fprintf('#iter = %d\n', length(errors_nag))
-
-%plot_sin(X, T_Noise, T_Real, [], beta_nag, [], [], f, W, b, N, '')
 
 B = eye(h*m);
-[beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T_Noise, lambda, N, 'BLS', false);
+[beta_bfgs_bls, errors_bfgs_bls, ~, ~, bls_prec_tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T_Noise, lambda, N, 'BLS', true, opt_val_noise, precision, true);
+%[beta_bfgs_bls, errors_bfgs_bls, ~, ~, bls_prec_tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true, opt_val, precision, true);
+    
 
-[v, ~] = ObjectiveFunc(beta_bfgs_bls, X, T_Real, W, b, N, f, lambda);
-
-fprintf('\nBFGS (BLS) \n')
-fprintf('MSE noise = %d\n', errors_bfgs_bls(length(errors_bfgs_bls)))
-fprintf('MSE real = %d\n', v)
-fprintf('#iter = %d\n', length(errors_bfgs_bls))
-
-
-%B = eye(h*m);
-%[beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T_Noise, lambda, N, 'AWLS', false);
+B = eye(h*m);
+%[beta_bfgs_awls, errors_bfgs_awls, ~, ~, ~] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T_Noise, lambda, N, 'AWLS', true, opt_val_noise, precision, true);
+[beta_bfgs_awls, errors_bfgs_awls, ~, ~, awls_prec_tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T_Noise, lambda, N, 'AWLS', true, opt_val_noise, precision, true);
+    
 
 %[v, ~] = ObjectiveFunc(beta_bfgs_awls, X, T_Real, W, b, N, f, lambda);
+%fprintf('REAL MSE = %d %d\n', v, v - opt_val_real)
 
-%fprintf('\nBFGS (AWLS) \n')
-%fprintf('MSE noise = %d\n', errors_bfgs_awls(length(errors_bfgs_awls)))
-%fprintf('MSE real = %d\n', v)
-%fprintf('#iter = %d\n', length(errors_bfgs_awls))
+%plot_sin(X, T_Noise, T_Real, [], [], no_lambda_beta_bfgs_awls, lambda_beta_bfgs_awls, f, W, b, N, 'Plots/sin_noise_1e-5_lambda_bfgs.png')
 
+%figure
+%semilogy(1:(length(errors_nag)), errors_nag, 1:(length(errors_bfgs_awls)), errors_bfgs_awls, 1:(length(errors_bfgs_bls)), errors_bfgs_bls)
+%xlabel('iteration', 'FontSize', 14)
+%ylabel('log(Error)', 'FontSize', 14)
+%legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
+%saveas(gcf, 'Plots/10-6_100_sin_convergence_rate.png')
 
-plot_sin(X, T_Noise, T_Real, [], [], beta_bfgs_bls, [], f, W, b, N, '')
+%figure
+%semilogy(1:(length(errors_bfgs_awls)), errors_bfgs_awls)
+%xlabel('iteration', 'FontSize', 14)
+%ylabel('log(Error)', 'FontSize', 14)
+%legend('BFGS (AWLS)')
+%saveas(gcf, 'Plots/10-6_100_sin_BFGS_only_convergence_rate.png')
 
 % ------------------------------------------------------ % 
 
@@ -109,7 +118,7 @@ function [X, T_Noise, T_Real] = create_sin_dataset(min_x, max_x, N_samples, nois
         min_noise  = -noise;
         max_noise  = noise;
         correction = min_noise + rand * (max_noise - min_noise);
-        T_Noise(c) = sin(i) + correction;
+        T_Noise(c) = (sin(i) + correction);
         T_Real(c)  = sin(i);
         c = c + 1;
     end
@@ -153,18 +162,18 @@ function plot_sin(X, T_Noise, T_Real, beta_opt, beta_nag, beta_bfgs_bls, beta_bf
     if isempty(beta_bfgs_bls) == false
         hold on
         Y = predict_sin(X, beta_bfgs_bls, f, W, b, N);
-        legends = [legends, "BFGS (BLS)"];
+        legends = [legends, "BFGS (AWLS) lambda = 0"];
         plot(X, Y)
     end
     
     if isempty(beta_bfgs_awls) == false
         hold on
         Y = predict_sin(X, beta_bfgs_awls, f, W, b, N);
-        legends = [legends, "BFGS (AWLS)"];
+        legends = [legends, "BFGS (AWLS) lambda = 1e-5"];
         plot(X, Y)
     end
     
-    legend(legends, 'Location', 'northwest')
+    legend(legends, 'Location', 'southwest')
     
     if isempty(saveto) == false
        saveas(gcf, saveto) 
