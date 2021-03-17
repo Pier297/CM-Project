@@ -47,32 +47,25 @@ for h = h_min:step:h_max
     end
     hessian = 2/N * (hessian + lambda);
     eta = 1/norm(hessian);
-    
-    ticStart = tic;
     for i = 1:k
-        [beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, false, intmax, intmax, opt_val, precision, true);
+        [~, errors_nag, ~, ~, tEnd] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, false, intmax, intmax, opt_val, precision, true);
     end
-    tEnd = toc(ticStart);
 
     nag_times(iter) = (tEnd / k); % / length(errors_nag);
     
     % --- Time BFGS (BLS)
     B = eye(h*m);
-    ticStart = tic;
     for i = 1:k
-        [beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', false, opt_val, precision, true);
+        [~, errors_bfgs_bls, ~, ~, tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', false, opt_val, precision, true);
     end
-    tEnd = toc(ticStart);
     
     bfgs_bls_times(iter) = (tEnd / k); % / length(errors_bfgs_bls);
     
     % --- Time BFGS (AWLS)
     B = eye(h*m);
-    ticStart = tic;
     for i = 1:k
-        [beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', false, opt_val, precision, true);
+        [~, errors_bfgs_awls, ~, ~, tEnd] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', false, opt_val, precision, true);
     end
-    tEnd = toc(ticStart);
 
     bfgs_awls_times(iter) = (tEnd / k); % / length(errors_bfgs_awls);
 
