@@ -1,8 +1,9 @@
 % --- parameter
 filename = 'data/monk1-train.txt';
 f = @tanh;              % hidden activation function
-h = 124;                % number of hidden units
-eps = 1e-10;
+h = 150;                % number of hidden units
+eps = 1e-8;
+precision = 1e-8;
 % --- end of parameter
 
 
@@ -45,21 +46,21 @@ for i = 1:N
 end
 hessian = 2/N * (hessian + lambda);
 eta = 1/norm(hessian);
-[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, 5000, 0);
+[beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, true, intmax, intmax, opt_val, precision, true);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_nag));
 fprintf('Relative error = %d\n', (errors_nag(end) - opt_val)/max(abs(opt_val),1));
 
 
 % ------- BFGS (BLS) -------
 B = eye(h*m);
-[beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true);
+[beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', true, opt_val, precision, true);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_bfgs_bls));
 fprintf('Relative error = %d\n', (errors_bfgs_bls(end) - opt_val)/max(abs(opt_val),1));
 
 
 % ------- BFGS (AWLS) -------
 B = eye(h*m);
-[beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', true);
+[beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', true, opt_val, precision, true);
 fprintf('Accuracy = %d\n', accuracy(X, T, W, b, f, N, beta_bfgs_awls));
 fprintf('Relative error = %d\n', (errors_bfgs_awls(end) - opt_val)/max(abs(opt_val),1));
 

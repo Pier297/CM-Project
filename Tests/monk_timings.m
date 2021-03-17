@@ -1,9 +1,10 @@
 % --- parameter
-filename = 'data/monk3-train.txt';
+filename = 'data/monk1-train.txt';
 f = @tanh;              % hidden activation function
-eps = 1e-3;
-lambda = 0.01;
-k = 2;
+eps = 1e-8;
+precision = 1e-7;
+lambda = 0;
+k = 5;
 h_min = 0;
 h_max = 3000;
 step = 300;
@@ -32,10 +33,11 @@ for h = h_min:step:h_max
     W = rand(h,n)*2-1;      % weight between input and hidden layer, range in [-1,1]
     b = rand(h,1)*2-1;      % bias of hidden nodes, range in [-1,1]
     beta = rand(h,m)*2-1;   % randomly initialized beta, range in [-1,1]
+    
+    % ------- True Solution -------
+    [beta_opt, opt_val, opt_val_grad] = true_solution(X, T, W, b, f, N, h, m, lambda);
 
-    [~, g0] = ObjectiveFunc(beta, X, T, W, b, N, f, lambda);
-    ng0 = norm(g0);
-
+    % --- Time NAG
     hessian = 0;
     for i = 1:N
         x = X(:,i);
@@ -46,10 +48,9 @@ for h = h_min:step:h_max
     hessian = 2/N * (hessian + lambda);
     eta = 1/norm(hessian);
     
-    % --- Time NAG
     ticStart = tic;
     for i = 1:k
-        [beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, false, intmax, intmax);
+        [beta_nag, errors_nag] = NAG(@ObjectiveFunc, beta, eps, eta, lambda, N, X, T, W, b, f, false, intmax, intmax, opt_val, precision, true);
     end
     tEnd = toc(ticStart);
 
@@ -59,7 +60,7 @@ for h = h_min:step:h_max
     B = eye(h*m);
     ticStart = tic;
     for i = 1:k
-        [beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', false);
+        [beta_bfgs_bls, errors_bfgs_bls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'BLS', false, opt_val, precision, true);
     end
     tEnd = toc(ticStart);
     
@@ -69,7 +70,7 @@ for h = h_min:step:h_max
     B = eye(h*m);
     ticStart = tic;
     for i = 1:k
-        [beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', false);
+        [beta_bfgs_awls, errors_bfgs_awls] = BFGS(@ObjectiveFunc, beta, B, eps, h, m, W, b, f, X, T, lambda, N, 'AWLS', false, opt_val, precision, true);
     end
     tEnd = toc(ticStart);
 
@@ -84,4 +85,4 @@ plot(h_min:step:h_max, nag_times, h_min:step:h_max, bfgs_bls_times, h_min:step:h
 xlabel('Number of hidden nodes', 'FontSize', 14)
 ylabel('Computation time', 'FontSize', 14)
 legend('NAG', 'BFGS (BLS)', 'BFGS (AWLS)')
-saveas(gcf, 'Plots/monk3_computation_time.png')
+saveas(gcf, 'Plots/monk1_total_time.png')
