@@ -34,21 +34,15 @@ Both NAG and BFGS can be executed with two differents stopping condition:
 A script to run the optimizations algorithms on the sin(x) dataset. It can also be used to control the noise in the data.
 
 - sin_timings.m <br>
-Measure timings for different h
-
-- sin_nag_bfgs_times.m <br>
- //
+Measure the time taken per iteration and the total time to reach a predefined relative error for different number of hidden units h.
 
 ## MONK
 
 - test_monk.m <br>
 A script to run the optimizations algorithms on the various MONK problems.
 
-- monk_time_per_iter.m <br>
-Computes the time per iteration making sure that the running time is >= 1e-1
-
 - monk_timings.m <br>
-Plots the time per iteration and the total time to reach a certain accuracy versus the number of hidden units h
+Measure the time taken per iteration and the total time to reach a predefined relative error for different number of hidden units h.
 
 ## Random matrix
 
@@ -56,7 +50,7 @@ Plots the time per iteration and the total time to reach a certain accuracy vers
 Tests on random matrix.
 
 - random_timings.m <br>
-Experiment used to measure the computational time per iteration versus the output dimension and the total time to reach a desired accuracy as the output dimension changes.
+Measure the time taken per iteration and the total time to reach a predefined relative error for different output dimensions m.
 
 - ill_random_matrix.m <br>
 Performs optimization tests on a close to singular random matrix.
