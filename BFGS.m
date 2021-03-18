@@ -2,10 +2,31 @@ function [beta, errors, tEnd, prec_tEnd] = BFGS(E, beta, B, eps, h, m, W, b, f, 
 % BFGS
 %
 % Input:
-%   E    : objective function
-%   beta : initial weight, a matrix with size = (h, m)
-%   B    : initial approximation of inverse Hessian, size = (h*m, h*m)
-%   eps  : accuracy for stopping criterion
+%   E             : objective function
+%   beta          : initial weight, a matrix with size = (h, m)
+%   B             : initial approximation of inverse Hessian, size = (h*m, h*m)
+%   eps           : accuracy for stopping criterion
+%   h, m, W, b, f : Defines the ELM
+%   X             : Training data inputs
+%   T             : Training data outputs
+%   lambda        : L2 regularization parameter
+%   N             : Number of training samples
+%   line_search   : Inexact line search method, can be either 'AWLS' or 'BLS'
+%   print_stat    : boolean flag, when equal to true it print info
+%   opt_val       : Optimal value of the problem, only used when
+%                   'keep_going_until_precision' equals to true
+%   precision     : Sets prefered relative error, keep the iterations going
+%                   until the current relative error is greater than this 'precision'; only used when
+%                   'keep_going_until_precision' equals to true
+%   keep_going_until_precision : When it is equal to false it uses the
+%                                relative norm of the gradient as a stopping condition, otherwise it
+%                                uses the 'precision' condition.
+%
+% Outputs:
+%   beta      : Optimal beta found by the optimization algorithm
+%   errors    : List of the absolute errors computed at each iteration
+%   tEnd      : Total number of seconds taken to found the optimal 'beta'.
+%   prec_tEnd : Total number of seconds taken to reach 'precision'.
 
 iter = 0;
 k = 0;

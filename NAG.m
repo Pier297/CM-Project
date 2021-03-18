@@ -1,18 +1,37 @@
 function [beta, errors, tEnd, prec_tEnd] = NAG(E, beta, eps, eta, lambda, N, X, T, W, b, f, print_stat, MAX_ITER, MAX_UNLUCKY_STEPS, opt_val, precision, keep_going_until_precision)
 % Nesterov' Accelerated Gradient Descent with L2 regularization
-% Inputs:
-%   E:    Error function
-%         E(beta) returns [v, g], where v is the value
-%         and g is the gradient
 %
-%   beta: Initial weights
-%
-%   eps:  Stopping criteria, it indicates that when the norm
-%         of the gradient is equal to 'eps' then we assume it's 0
-%         or equally that we are at a minima.
+% Input:
+%   E                 : objective function
+%   beta              : initial weight, a matrix with size = (h, m)
+%   B                 : initial approximation of inverse Hessian, size = (h*m, h*m)
+%   eps               : accuracy for stopping criterion
+%   eta               : Fixed step size
+%   lambda            : L2 regularization parameter
+%   N                 : Number of training samples
+%   X                 : Training data inputs
+%   T                 : Training data outputs
+%   W, b, f           : Defines the ELM
+%   print_stat        : boolean flag, when equal to true it print info
+%   MAX_ITER          : Stops when the number of iterations exceed this
+%                       constant.
+%   MAX_UNLUCKY_STEPS : Stops when the absolute error keep increasing after
+%                       'MAX_UNLUCKY_STEPS' iterations. When this is equal to 0 it forces a
+%                        minimizing sequence.
+%   opt_val           : Optimal value of the problem, only used when
+%                      'keep_going_until_precision' equals to true
+%   precision         : Sets prefered relative error, keep the iterations going
+%                       until the current relative error is greater than this 'precision'; only used when
+%                       'keep_going_until_precision' equals to true
+%   keep_going_until_precision : When it is equal to false it uses the
+%                                relative norm of the gradient as a stopping condition, otherwise it
+%                                uses the 'precision' condition.
 %
 % Outputs:
-%   beta: Final weights
+%   beta      : Optimal beta found by the optimization algorithm
+%   errors    : List of the absolute errors computed at each iteration
+%   tEnd      : Total number of seconds taken to found the optimal 'beta'.
+%   prec_tEnd : Total number of seconds taken to reach 'precision'.
 
     function [a_t_plus_1] = update_a(a_t)
        a_t_plus_1 = (1 + sqrt(4 * a_t^2 + 1))/2;
